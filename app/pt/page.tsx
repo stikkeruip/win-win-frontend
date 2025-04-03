@@ -1,9 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
-import { useTranslations } from '@/hooks/use-translations'
 
 export default function Home() {
-  const { t, localizedPath } = useTranslations()
   return (
     <div className="relative overflow-hidden bg-white">
       {/* Background decoration */}
@@ -21,40 +19,43 @@ export default function Home() {
               <div className="flex flex-col space-y-8">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                    {t('welcomeTitle')}
+                    Welcome to <span className="text-[#FFA94D]">WIN</span>-<span className="text-[#74C0FC]">WIN</span>{" "}
+                    Training Hub
                   </h1>
                   <p className="text-lg text-gray-600 md:text-xl">
-                    {t('welcomeSubtitle')}
+                    A multilingual educational platform designed to provide training materials and resources across
+                    different languages and cultures.
                   </p>
                   <p className="text-lg text-gray-600 md:text-xl">
-                    {t('welcomeDescription')}
+                    Our hub offers structured learning modules, downloadable resources, and support materials to enhance
+                    your skills and knowledge.
                   </p>
                 </div>
 
                 <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <Link
-                    href={localizedPath('/training')}
+                    href="/training"
                     className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-6 py-3 text-lg font-medium text-white shadow-md transition-all hover:from-[#FF8A3D] hover:to-[#FF7A2D] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
                   >
-                    {t('startTraining')}
+                    Start Training
                   </Link>
                   <Link
-                    href={localizedPath('/about')}
+                    href="/about"
                     className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-lg font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
                   >
-                    {t('learnMore')}
+                    Learn More
                   </Link>
                 </div>
 
                 {/* Callouts */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-lg bg-orange-50 p-4">
-                  <div className="font-bold text-orange-600">{t('resources')}</div>
-                  <div className="text-sm text-gray-600">{t('comprehensive')}</div>
+                    <div className="font-bold text-orange-600">100+ Resources</div>
+                    <div className="text-sm text-gray-600">Comprehensive learning materials</div>
                   </div>
                   <div className="rounded-lg bg-blue-50 p-4">
-                  <div className="font-bold text-blue-600">{t('culturallyInclusive')}</div>
-                  <div className="text-sm text-gray-600">{t('globalLearners')}</div>
+                    <div className="font-bold text-blue-600">Culturally Inclusive</div>
+                    <div className="text-sm text-gray-600">Designed for global learners</div>
                   </div>
                 </div>
               </div>
@@ -77,8 +78,8 @@ export default function Home() {
         <section className="bg-gray-50 px-6 py-16">
           <div className="mx-auto max-w-7xl">
             <div className="mb-12 text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('whyChooseWinWin')}</h2>
-              <p className="mt-4 text-lg text-gray-600">{t('platformDesigned')}</p>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Why Choose WIN-WIN?</h2>
+              <p className="mt-4 text-lg text-gray-600">Our platform is designed with students in mind</p>
             </div>
 
             <div className="grid gap-8 md:grid-cols-3">
@@ -99,8 +100,10 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-xl font-bold">{t('multilingualContent')}</h3>
-                <p className="text-gray-600">{t('multilingualDescription')}</p>
+                <h3 className="mb-2 text-xl font-bold">Multilingual Content</h3>
+                <p className="text-gray-600">
+                  Access resources in multiple languages to support diverse learning needs.
+                </p>
               </div>
 
               <div className="rounded-lg bg-white p-6 shadow-md transition-all hover:shadow-lg">
@@ -120,8 +123,10 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-xl font-bold">{t('structuredLearning')}</h3>
-                <p className="text-gray-600">{t('structuredDescription')}</p>
+                <h3 className="mb-2 text-xl font-bold">Structured Learning</h3>
+                <p className="text-gray-600">
+                  Follow clear learning paths designed to build your knowledge step by step.
+                </p>
               </div>
 
               <div className="rounded-lg bg-white p-6 shadow-md transition-all hover:shadow-lg">
@@ -141,8 +146,10 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-xl font-bold">{t('communitySupport')}</h3>
-                <p className="text-gray-600">{t('communityDescription')}</p>
+                <h3 className="mb-2 text-xl font-bold">Community Support</h3>
+                <p className="text-gray-600">
+                  Connect with peers and instructors for guidance and collaborative learning.
+                </p>
               </div>
             </div>
           </div>
@@ -151,3 +158,4 @@ export default function Home() {
     </div>
   )
 }
+
