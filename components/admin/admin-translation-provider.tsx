@@ -25,6 +25,11 @@ export function AdminTranslationProvider({ children }: { children: React.ReactNo
             return t(key as any)
         }
 
+        // Special case for 'language' - use it directly without prefix
+        if (key === 'language') {
+            return t(key as any)
+        }
+
         // Otherwise, prefix with 'admin_' to access admin translations
         return t(`admin_${key}` as any)
     }

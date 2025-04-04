@@ -3,8 +3,11 @@
 import { useState, useCallback } from 'react'
 import { uploadFile } from '@/lib/admin-api'
 import { UploadCloud, Check, AlertCircle, Copy, X } from 'lucide-react'
+import { useAdminTranslation } from './admin-translation-provider'
+import AdminTranslationHandler from './admin-translation-handler'
 
 export default function AdminFileUpload() {
+    const { t } = useAdminTranslation()
     const [files, setFiles] = useState<{ file: File; progress: number; url?: string; error?: string }[]>([])
     const [isUploading, setIsUploading] = useState(false)
     const [dragActive, setDragActive] = useState(false)
@@ -100,7 +103,7 @@ export default function AdminFileUpload() {
             setFiles(prev =>
                 prev.map(f =>
                     f.file === file
-                        ? { ...f, progress: 0, error: error.message || 'Upload failed' }
+                        ? { ...f, progress: 0, error: error.message || t('uploadFailed') }
                         : f
                 )
             )
@@ -119,7 +122,7 @@ export default function AdminFileUpload() {
     const copyToClipboard = (url: string) => {
         navigator.clipboard.writeText(url)
             .then(() => {
-                alert('URL copied to clipboard')
+                alert(t('urlCopied'))
             })
             .catch(err => {
                 console.error('Failed to copy URL: ', err)
@@ -128,8 +131,11 @@ export default function AdminFileUpload() {
 
     return (
         <div className="space-y-6">
+            {/* Include the translation handler to ensure language changes are detected */}
+            <AdminTranslationHandler />
+
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">File Upload</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('fileUpload')}</h1>
             </div>
 
             {/* Upload Component */}
@@ -151,7 +157,7 @@ export default function AdminFileUpload() {
                             htmlFor="file-upload"
                             className="cursor-pointer rounded-md bg-white font-medium text-orange-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-orange-500 focus-within:ring-offset-2 hover:text-orange-500"
                         >
-                            <span>Upload files</span>
+                            <span>{t('uploadFiles')}</span>
                             <input
                                 id="file-upload"
                                 name="file-upload"
@@ -161,10 +167,10 @@ export default function AdminFileUpload() {
                                 onChange={handleFileChange}
                             />
                         </label>
-                        <span className="pl-1 text-gray-500">or drag and drop</span>
+                        <span className="pl-1 text-gray-500">{t('orDragAndDrop')}</span>
                     </div>
                     <p className="mt-2 text-xs text-gray-500">
-                        PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG up to 10MB
+                        {t('supportedFileTypes')}
                     </p>
                 </div>
             </div>
@@ -172,7 +178,7 @@ export default function AdminFileUpload() {
             {/* File List */}
             {files.length > 0 && (
                 <div className="rounded-lg bg-white p-6 shadow">
-                    <h2 className="mb-4 text-lg font-medium text-gray-900">Uploaded Files</h2>
+                    <h2 className="mb-4 text-lg font-medium text-gray-900">{t('uploadedFiles')}</h2>
                     <div className="space-y-4">
                         {files.map((fileInfo, index) => (
                             <div
@@ -234,7 +240,7 @@ export default function AdminFileUpload() {
 
                                 {fileInfo.error && (
                                     <div className="mt-2 text-sm text-red-600">
-                                        Error: {fileInfo.error}
+                                        {t('error')}: {fileInfo.error}
                                     </div>
                                 )}
 

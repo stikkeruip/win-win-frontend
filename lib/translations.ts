@@ -111,7 +111,18 @@ export type TranslationKey =
     | 'admin_tryChangingSearch'
     | 'admin_getStarted'
     | 'admin_status'
-    | 'admin_failedLoadStats';
+    | 'admin_failedLoadStats'
+    | 'admin_editContent'
+    | 'admin_createContent'
+    | 'admin_mainContent'
+    | 'admin_originalContentDescription'
+    | 'admin_selectLanguage'
+    | 'admin_translationsDescription'
+    | 'admin_noTranslationsDescription'
+    | 'admin_addTranslationButton'
+    | 'admin_translationTitle'
+    | 'admin_saving'
+    | 'admin_updateContent';
 
 // Create translations for each language
 const translations: Record<string, Record<TranslationKey, string>> = {
@@ -227,7 +238,18 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_tryChangingSearch: 'Try changing your search criteria or filters',
         admin_getStarted: 'Get started by creating your first content',
         admin_status: 'Status',
-        admin_failedLoadStats: 'Failed to load statistics. Please try again.'
+        admin_failedLoadStats: 'Failed to load statistics. Please try again.',
+        admin_editContent: 'Edit Content',
+        admin_createContent: 'Create New Content',
+        admin_mainContent: 'Main Content',
+        admin_originalContentDescription: 'This is the original content that will be translated',
+        admin_selectLanguage: 'Select Language',
+        admin_translationsDescription: 'Add translations for different languages',
+        admin_noTranslationsDescription: 'Get started by adding a translation.',
+        admin_addTranslationButton: 'Add Translation',
+        admin_translationTitle: 'Translation',
+        admin_saving: 'Saving...',
+        admin_updateContent: 'Update Content'
     },
 
     fr: {
@@ -325,23 +347,34 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_password: 'Mot de passe',
         admin_loginError: 'Erreur de connexion',
         admin_loginDescription: 'Connectez-vous pour accéder au système de gestion de contenu',
-        admin_uploadedFiles: 'Uploaded Files',
-        admin_orDragAndDrop: 'or drag and drop',
-        admin_supportedFileTypes: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG up to 10MB',
+        admin_uploadedFiles: 'Fichiers Téléchargés',
+        admin_orDragAndDrop: 'ou glisser-déposer',
+        admin_supportedFileTypes: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG jusqu\'à 10MB',
         admin_supportedFileFormats: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.',
-        admin_uploading: 'Uploading...',
-        admin_urlCopied: 'URL copied to clipboard',
-        admin_uploadFailed: 'Upload failed',
-        admin_contentVisitDistribution: 'Content Visit Distribution',
-        admin_contentCount: 'Content Count',
-        admin_avgVisitsPerContent: 'Avg. Visits Per Content',
-        admin_visits: 'Visits',
-        admin_noVisitData: 'No visit data available',
-        admin_refresh: 'Refresh',
-        admin_tryChangingSearch: 'Try changing your search criteria or filters',
-        admin_getStarted: 'Get started by creating your first content',
-        admin_status: 'Status',
-        admin_failedLoadStats: 'Failed to load statistics. Please try again.'
+        admin_uploading: 'Téléchargement en cours...',
+        admin_urlCopied: 'URL copiée dans le presse-papiers',
+        admin_uploadFailed: 'Échec du téléchargement',
+        admin_contentVisitDistribution: 'Distribution des Visites de Contenu',
+        admin_contentCount: 'Nombre de Contenus',
+        admin_avgVisitsPerContent: 'Moy. Visites Par Contenu',
+        admin_visits: 'Visites',
+        admin_noVisitData: 'Aucune donnée de visite disponible',
+        admin_refresh: 'Actualiser',
+        admin_tryChangingSearch: 'Essayez de modifier vos critères de recherche ou filtres',
+        admin_getStarted: 'Commencez par créer votre premier contenu',
+        admin_status: 'Statut',
+        admin_failedLoadStats: 'Échec du chargement des statistiques. Veuillez réessayer.',
+        admin_editContent: 'Modifier le Contenu',
+        admin_createContent: 'Créer un Nouveau Contenu',
+        admin_mainContent: 'Contenu Principal',
+        admin_originalContentDescription: 'Ceci est le contenu original qui sera traduit',
+        admin_selectLanguage: 'Sélectionner la Langue',
+        admin_translationsDescription: 'Ajouter des traductions pour différentes langues',
+        admin_noTranslationsDescription: 'Commencez par ajouter une traduction.',
+        admin_addTranslationButton: 'Ajouter une Traduction',
+        admin_translationTitle: 'Traduction',
+        admin_saving: 'Enregistrement...',
+        admin_updateContent: 'Mettre à Jour le Contenu'
     },
 
     pt: {
@@ -455,7 +488,18 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_tryChangingSearch: 'Tente alterar seus critérios de pesquisa ou filtros',
         admin_getStarted: 'Comece criando seu primeiro conteúdo',
         admin_status: 'Status',
-        admin_failedLoadStats: 'Falha ao carregar estatísticas. Por favor, tente novamente.'
+        admin_failedLoadStats: 'Falha ao carregar estatísticas. Por favor, tente novamente.',
+        admin_addTranslationButton: 'Adicionar Tradução',
+        admin_translationTitle: 'Tradução',
+        admin_editContent: 'Editar Conteúdo',
+        admin_createContent: 'Criar Novo Conteúdo',
+        admin_mainContent: 'Conteúdo Principal',
+        admin_originalContentDescription: 'Este é o conteúdo original que será traduzido',
+        admin_selectLanguage: 'Selecionar Idioma',
+        admin_translationsDescription: 'Adicionar traduções para diferentes idiomas',
+        admin_noTranslationsDescription: 'Comece adicionando uma tradução.',
+        admin_saving: 'Salvando...',
+        admin_updateContent: 'Atualizar Conteúdo'
     },
 
     ar: {
@@ -569,7 +613,18 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_tryChangingSearch: 'حاول تغيير معايير البحث أو الفلاتر الخاصة بك',
         admin_getStarted: 'ابدأ بإنشاء المحتوى الأول الخاص بك',
         admin_status: 'الحالة',
-        admin_failedLoadStats: 'فشل تحميل الإحصائيات. يرجى المحاولة مرة أخرى.'
+        admin_failedLoadStats: 'فشل تحميل الإحصائيات. يرجى المحاولة مرة أخرى.',
+        admin_addTranslationButton: 'إضافة ترجمة',
+        admin_translationTitle: 'ترجمة',
+        admin_editContent: 'تعديل المحتوى',
+        admin_createContent: 'إنشاء محتوى جديد',
+        admin_mainContent: 'المحتوى الرئيسي',
+        admin_originalContentDescription: 'هذا هو المحتوى الأصلي الذي سيتم ترجمته',
+        admin_selectLanguage: 'اختر اللغة',
+        admin_translationsDescription: 'إضافة ترجمات بلغات مختلفة',
+        admin_noTranslationsDescription: 'ابدأ بإضافة ترجمة.',
+        admin_saving: 'جاري الحفظ...',
+        admin_updateContent: 'تحديث المحتوى'
     }
 };
 

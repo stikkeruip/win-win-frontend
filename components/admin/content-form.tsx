@@ -20,6 +20,8 @@ import {
     Globe,
     UploadCloud
 } from 'lucide-react'
+import { useAdminTranslation } from './admin-translation-provider'
+import AdminTranslationHandler from './admin-translation-handler'
 
 interface ContentFormProps {
     contentId?: number
@@ -46,6 +48,7 @@ interface ContentForm {
 
 export default function AdminContentForm({ contentId }: ContentFormProps) {
     const router = useRouter()
+    const { t } = useAdminTranslation()
     const [languages, setLanguages] = useState<Language[]>([])
     const [formData, setFormData] = useState<ContentForm>({
         title: '',
@@ -317,9 +320,12 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
 
     return (
         <div className="space-y-6">
+            {/* Include the translation handler to ensure language changes are detected */}
+            <AdminTranslationHandler />
+
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">
-                    {isEditMode ? 'Edit Content' : 'Create New Content'}
+                    {isEditMode ? t('editContent') : t('createContent')}
                 </h1>
                 <button
                     type="button"
@@ -327,7 +333,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                     className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to List
+                    {t('back')}
                 </button>
             </div>
 
@@ -338,7 +344,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                             <X className="h-5 w-5 text-red-400" />
                         </div>
                         <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800">Error</h3>
+                            <h3 className="text-sm font-medium text-red-800">{t('error')}</h3>
                             <div className="mt-2 text-sm text-red-700">
                                 <p>{error}</p>
                             </div>
@@ -353,17 +359,17 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                     <div className="space-y-6 rounded-lg bg-white p-6 shadow">
                         <div>
                             <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                Main Content ({getLanguageName(formData.language_id)})
+                                {t('mainContent')} ({getLanguageName(formData.language_id)})
                             </h3>
                             <p className="mt-1 text-sm text-gray-500">
-                                This is the original content that will be translated
+                                {t('originalContentDescription')}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-6">
                             <div className="sm:col-span-4">
                                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                                    Title
+                                    {t('title')}
                                 </label>
                                 <div className="mt-1">
                                     <input
@@ -380,7 +386,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
 
                             <div className="sm:col-span-3">
                                 <label htmlFor="language_id" className="block text-sm font-medium text-gray-700">
-                                    Language
+                                    {t('language')}
                                 </label>
                                 <div className="mt-1">
                                     <select
@@ -391,7 +397,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                         onChange={handleInputChange}
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                                     >
-                                        <option value="">Select Language</option>
+                                        <option value="">{t('admin_selectLanguage')}</option>
                                         {languages.map(language => (
                                             <option key={language.id} value={language.id}>
                                                 {language.name}
@@ -403,7 +409,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
 
                             <div className="sm:col-span-3">
                                 <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                                    Content Type
+                                    {t('contentType')}
                                 </label>
                                 <div className="mt-1">
                                     <select
@@ -418,16 +424,16 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                         <option value="resource">Resource</option>
                                         <option value="document">Document</option>
                                         <option value="video">Video</option>
-                                        <option value="beginner">Beginner</option>
-                                        <option value="intermediate">Intermediate</option>
-                                        <option value="advanced">Advanced</option>
+                                        <option value="beginner">{t('beginner')}</option>
+                                        <option value="intermediate">{t('intermediate')}</option>
+                                        <option value="advanced">{t('advanced')}</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="sm:col-span-6">
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                                    Description
+                                    {t('description')}
                                 </label>
                                 <div className="mt-1">
                   <textarea
@@ -442,7 +448,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                             </div>
 
                             <div className="sm:col-span-6">
-                                <label className="block text-sm font-medium text-gray-700">File</label>
+                                <label className="block text-sm font-medium text-gray-700">{t('file')}</label>
                                 <div className="mt-1 flex items-center">
                                     {formData.file_link ? (
                                         <div className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm">
@@ -473,13 +479,13 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                 {isUploading['main'] ? (
                                                     <div className="flex items-center">
                                                         <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-orange-500 border-t-transparent"></div>
-                                                        <span className="text-sm text-gray-500">Uploading...</span>
+                                                        <span className="text-sm text-gray-500">{t('uploading')}</span>
                                                     </div>
                                                 ) : (
                                                     <div className="text-center">
                                                         <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                                                         <div className="mt-2 flex text-sm text-gray-600">
-                                                            <span>Upload a file</span>
+                                                            <span>{t('uploadAFile')}</span>
                                                             <input
                                                                 id="main-file-upload"
                                                                 name="file"
@@ -489,7 +495,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                             />
                                                         </div>
                                                         <p className="text-xs text-gray-500">
-                                                            PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.
+                                                            {t('supportedFileFormats')}
                                                         </p>
                                                     </div>
                                                 )}
@@ -506,9 +512,9 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">Translations</h3>
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900">{t('translations')}</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Add translations for different languages
+                                        {t('translationsDescription')}
                                     </p>
                                 </div>
                                 <button
@@ -517,16 +523,16 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                     className="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
                                 >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Add Translation
+                                    {t('addTranslationButton')}
                                 </button>
                             </div>
 
                             {formData.translations.length === 0 ? (
                                 <div className="rounded-md bg-gray-50 p-6 text-center">
                                     <Globe className="mx-auto h-12 w-12 text-gray-400" />
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No translations</h3>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noTranslations')}</h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Get started by adding a translation.
+                                        {t('noTranslationsDescription')}
                                     </p>
                                     <div className="mt-6">
                                         <button
@@ -535,7 +541,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                             className="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
                                         >
                                             <Plus className="mr-2 h-4 w-4" />
-                                            Add Translation
+                                            {t('addTranslationButton')}
                                         </button>
                                     </div>
                                 </div>
@@ -557,7 +563,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                             </div>
 
                                             <h4 className="text-lg font-medium text-gray-900">
-                                                Translation ({getLanguageName(translation.language_id)})
+                                                {t('translationTitle')} ({getLanguageName(translation.language_id)})
                                                 {translation.id && <span className="ml-2 text-sm text-gray-500">(ID: {translation.id})</span>}
                                             </h4>
 
@@ -567,7 +573,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                         htmlFor={`translation-${index}-title`}
                                                         className="block text-sm font-medium text-gray-700"
                                                     >
-                                                        Title
+                                                        {t('admin_title')}
                                                     </label>
                                                     <div className="mt-1">
                                                         <input
@@ -587,7 +593,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                         htmlFor={`translation-${index}-language_id`}
                                                         className="block text-sm font-medium text-gray-700"
                                                     >
-                                                        Language
+                                                        {t('language')}
                                                     </label>
                                                     <div className="mt-1">
                                                         <select
@@ -598,7 +604,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                             onChange={(e) => handleTranslationChange(index, e)}
                                                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
                                                         >
-                                                            <option value="">Select Language</option>
+                                                            <option value="">{t('admin_selectLanguage')}</option>
                                                             {languages
                                                                 .filter(lang =>
                                                                     // Show current selection or unused languages
@@ -625,7 +631,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                         htmlFor={`translation-${index}-description`}
                                                         className="block text-sm font-medium text-gray-700"
                                                     >
-                                                        Description
+                                                        {t('admin_description')}
                                                     </label>
                                                     <div className="mt-1">
                             <textarea
@@ -640,7 +646,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                 </div>
 
                                                 <div className="sm:col-span-6">
-                                                    <label className="block text-sm font-medium text-gray-700">File</label>
+                                                    <label className="block text-sm font-medium text-gray-700">{t('admin_file')}</label>
                                                     <div className="mt-1 flex items-center">
                                                         {translation.file_link ? (
                                                             <div className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm">
@@ -678,13 +684,13 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                                     {isUploading[index] ? (
                                                                         <div className="flex items-center">
                                                                             <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                                                                            <span className="text-sm text-gray-500">Uploading...</span>
+                                                                            <span className="text-sm text-gray-500">{t('admin_uploading')}</span>
                                                                         </div>
                                                                     ) : (
                                                                         <div className="text-center">
                                                                             <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                                                                             <div className="mt-2 flex text-sm text-gray-600">
-                                                                                <span>Upload a file</span>
+                                                                                <span>{t('admin_uploadAFile')}</span>
                                                                                 <input
                                                                                     id={`translation-${index}-file-upload`}
                                                                                     name="file"
@@ -694,7 +700,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                                                                 />
                                                                             </div>
                                                                             <p className="text-xs text-gray-500">
-                                                                                PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.
+                                                                                {t('admin_supportedFileFormats')}
                                                                             </p>
                                                                         </div>
                                                                     )}
@@ -719,7 +725,7 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                 onClick={() => router.push('/admin/content')}
                                 className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="submit"
@@ -729,12 +735,12 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                 {isSaving ? (
                                     <>
                                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        Saving...
+                                        {t('saving')}
                                     </>
                                 ) : (
                                     <>
                                         <Save className="mr-2 h-4 w-4" />
-                                        {isEditMode ? 'Update Content' : 'Create Content'}
+                                        {isEditMode ? t('updateContent') : t('createContent')}
                                     </>
                                 )}
                             </button>

@@ -20,6 +20,7 @@ import {
     ResponsiveContainer
 } from 'recharts'
 import { useAdminTranslation } from './admin-translation-provider'
+import AdminTranslationHandler from './admin-translation-handler'
 
 interface ContentVisit {
     id: number
@@ -59,6 +60,9 @@ export default function AdminStats() {
 
     return (
         <div className="space-y-6">
+            {/* Include the translation handler to ensure language changes are detected */}
+            <AdminTranslationHandler />
+
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">{t('statistics')}</h1>
                 <button
