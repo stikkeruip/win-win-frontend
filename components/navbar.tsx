@@ -5,12 +5,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Logo from "./logo"
 import LanguageSelector from "./language-selector"
-import { languages } from "./language-selector"
+import { useLanguage } from "@/app/language-provider"
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { t, currentLang, localizedPath } = useLanguage()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,17 +26,17 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Determine current language from URL
-  const currentLanguageCode = pathname.split('/')[1]
-  const isValidLanguage = languages.some(lang => lang.code === currentLanguageCode)
-  const langPrefix = isValidLanguage ? `/${currentLanguageCode}` : ''
+  // Log current language for debugging
+  useEffect(() => {
+    console.log('Navbar - Current language:', currentLang)
+  }, [currentLang])
 
   const navLinks = [
-    { name: "Home", href: `${langPrefix}/` },
-    { name: "Training", href: `${langPrefix}/training` },
-    { name: "Media", href: `${langPrefix}/media` },
-    { name: "Partnership", href: `${langPrefix}/partnership` },
-    { name: "Support", href: `${langPrefix}/support` },
+    { name: t('home'), href: localizedPath('/') },
+    { name: t('training'), href: localizedPath('/training') },
+    { name: t('media'), href: localizedPath('/media') },
+    { name: t('partnership'), href: localizedPath('/partnership') },
+    { name: t('support'), href: localizedPath('/support') },
   ]
 
   return (
@@ -47,7 +48,7 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <Link href={`${langPrefix}/`} className="flex items-center">
+              <Link href={localizedPath('/')} className="flex items-center">
                 <Logo />
               </Link>
             </div>
@@ -60,7 +61,7 @@ export default function Navbar() {
                         key={link.name}
                         href={link.href}
                         className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                            pathname === link.href || (link.href === `${langPrefix}/` && pathname === langPrefix)
+                            pathname === link.href
                                 ? "bg-gray-100 text-gray-900"
                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }`}
@@ -122,7 +123,7 @@ export default function Navbar() {
                         key={link.name}
                         href={link.href}
                         className={`block rounded-md px-3 py-2 text-base font-medium ${
-                            pathname === link.href || (link.href === `${langPrefix}/` && pathname === langPrefix)
+                            pathname === link.href
                                 ? "bg-gray-100 text-gray-900"
                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }`}

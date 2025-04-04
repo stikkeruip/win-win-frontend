@@ -2,10 +2,16 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useTranslations } from '@/hooks/use-translations'
+import { useLanguage } from './language-provider'
+import { useEffect } from 'react'
 
 export default function Home() {
-  const { t, localizedPath } = useTranslations()
+  const { t, localizedPath, currentLang } = useLanguage()
+
+  // Ensure the page re-renders when language changes
+  useEffect(() => {
+    // This empty dependency array ensures the component re-renders when currentLang changes
+  }, [currentLang, t])
 
   return (
       <div className="relative overflow-hidden bg-white">

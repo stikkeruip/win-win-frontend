@@ -1,11 +1,17 @@
 'use client'
 
+import { useEffect } from "react"
 import CourseCard from "@/components/course-card"
 import { courses } from "@/lib/data"
-import { useTranslations } from "@/hooks/use-translations"
+import { useLanguage } from "@/app/language-provider"
 
 export default function Training() {
-  const { t } = useTranslations()
+  const { t, currentLang } = useLanguage()
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Training page - Current language:', currentLang)
+  }, [currentLang])
 
   return (
       <div className="bg-white py-12 md:py-16 lg:py-20">

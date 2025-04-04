@@ -178,6 +178,10 @@ const translations: Record<string, Record<TranslationKey, string>> = {
 
 // Helper function to get translations for a specific language
 export function getTranslations(lang: string = 'en') {
-    // Default to English if the language isn't supported
-    return translations[lang] || translations['en'];
+    // Verify the language exists in our translations
+    if (!translations[lang]) {
+        console.warn(`No translations available for language code: ${lang}, falling back to English`);
+        return translations['en'];
+    }
+    return translations[lang];
 }

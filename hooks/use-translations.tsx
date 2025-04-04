@@ -22,7 +22,13 @@ export function useTranslations() {
     const translations = getTranslations(currentLang)
 
     // Helper function to translate a key
-    const t = (key: TranslationKey) => translations[key] || key
+    const t = (key: TranslationKey) => {
+        // Debug logging (remove in production)
+        console.log(`Translating key: ${key} for language: ${currentLang}`)
+        console.log(`Translation result:`, translations[key])
+
+        return translations[key] || key
+    }
 
     return {
         t,

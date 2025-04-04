@@ -1,98 +1,78 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getSupportedLanguageCodes } from './components/language-selector';
 
-// Define supported languages
-const supportedLanguages = ['en', 'fr', 'ar', 'pt']
-
-// Regular expressions to match exclusions
-const publicFileRegex = /\.(jpg|jpeg|png|gif|svg|ico|webp|js|css|woff|woff2)$/
-const apiRouteRegex = /^\/api\/.*$/
-const nextJsRoutesRegex = /^\/_next\/.*$/
-
-export function middleware(request: NextRequest) {
-    const pathname = request.nextUrl.pathname
-
-    // Skip static files, API routes, and Next.js internal routes
-    if (
-        publicFileRegex.test(pathname) ||
-        apiRouteRegex.test(pathname) ||
-        nextJsRoutesRegex.test(pathname)
-    ) {
-        return NextResponse.next()
-    }
-
-    // Add the pathname to response headers for server components to access
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-pathname', pathname)
-
-    // Check if pathname already has a valid language prefix
-    const firstSegment = pathname.split('/')[1]
-    const hasLanguagePrefix = supportedLanguages.includes(firstSegment)
-
-    if (hasLanguagePrefix) {
-        // Return with the pathname header added
-        return NextResponse.next({
-            request: {
-                headers: requestHeaders
-            }
-        })
-    }
-
-    // Determine the preferred language from the Accept-Language header
-    // Default to 'en' if no preference or not supported
-    let preferredLanguage = 'en'
-
-    const acceptLanguage = request.headers.get('Accept-Language')
-    if (acceptLanguage) {
-        // Parse the Accept-Language header
-        const preferredLanguages = acceptLanguage
-            .split(',')
-            .map(lang => {
-                const [language, priority] = lang.trim().split(';q=')
-                return {
-                    language: language.split('-')[0], // Get just the language code
-                    priority: priority ? parseFloat(priority) : 1.0
-                }
-            })
-            .sort((a, b) => b.priority - a.priority)
-
-        // Find the first supported language
-        const matchedLanguage = preferredLanguages.find(lang =>
-            supportedLanguages.includes(lang.language)
-        )
-
-        if (matchedLanguage) {
-            preferredLanguage = matchedLanguage.language
-        }
-    }
-
-    // If the preferred language is English, no redirect needed for root
-    if (preferredLanguage === 'en' && pathname === '/') {
-        return NextResponse.next({
-            request: {
-                headers: requestHeaders
-            }
-        })
-    }
-
-    // If the preferred language is English but not on root, don't redirect
-    if (preferredLanguage === 'en' && pathname !== '/') {
-        return NextResponse.next({
-            request: {
-                headers: requestHeaders
-            }
-        })
-    }
-
-    // For all other supported languages, redirect to the localized URL
-    const url = new URL(`/${preferredLanguage}${pathname}`, request.url)
-
-    return NextResponse.redirect(url)
-}
+// Get the supported languages
+const supportedLanguages = getSupportedLanguageCodes();
 
 export const config = {
-    matcher: [
-        // Match all paths except static files, API routes, and Next.js internal routes
-        '/((?!api|_next|.*\\..*).*)',
-    ],
+    // Skip static assets to avoid unnecessary middleware execution
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg$).*)'],
+};
+
+export function middleware(request: NextRequest) {
+    const pathname = request.nextUrl.pathname;
+
+    // Get language from URL path
+    const pathnameLanguage = pathname.split('/')[1];
+    const isLanguageInPath = supportedLanguages.includes(pathnameLanguage);
+
+    // If language already in path, no need to redirect
+    if (isLanguageInPath) {
+        return NextResponse.next();
+    }
+
+    // Get language from cookie or Accept-Language header
+    let language;
+
+    // Check cookie first
+    const localeCookie = request.cookies.get('NEXT_LOCALE');
+    if (localeCookie && supportedLanguages.includes(localeCookie.value)) {
+        language = localeCookie.value;
+    } else {
+        // Fall back to Accept-Language header
+        const acceptLanguageHeader = request.headers.get('Accept-Language') || '';
+        // Parse the Accept-Language header to get preferred languages
+        const acceptedLanguages = acceptLanguageHeader
+            .split(',')
+            .map(item => {
+                const [lang, priority = '1'] = item.trim().split(';q=');
+                return {
+                    lang: lang.split('-')[0], // Just get the language code (en-US -> en)
+                    priority: parseFloat(priority)
+                };
+            })
+            .sort((a, b) => b.priority - a.priority); // Sort by priority
+
+        // Find the first supported language
+        const matchedLang = acceptedLanguages.find(item =>
+            supportedLanguages.includes(item.lang)
+        );
+
+        language = matchedLang ? matchedLang.lang : 'en';
+    }
+
+    // If language is English (default), no need to redirect
+    if (language === 'en') {
+        return NextResponse.next();
+    }
+
+    // For non-English languages, add the language prefix to the URL
+    // and redirect (except for root path which has special handling)
+    const url = request.nextUrl.clone();
+    url.pathname = pathname === '/' ? `/${language}` : `/${language}${pathname}`;
+
+    // Create a response that redirects to the new URL with the language prefix
+    const response = NextResponse.redirect(url);
+
+    // Store language preference in cookie for future visits
+    response.cookies.set({
+        name: 'NEXT_LOCALE',
+        value: language,
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+    });
+
+    return response;
 }

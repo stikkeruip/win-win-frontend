@@ -3,14 +3,14 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { Course } from "@/lib/types"
-import { useTranslations } from "@/hooks/use-translations"
+import { useLanguage } from "@/app/language-provider"
 
 interface CourseCardProps {
   course: Course
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const { t, localizedPath } = useTranslations()
+  const { t, localizedPath } = useLanguage()
 
   // Translate level
   const translatedLevel = t(course.level.toLowerCase() as any) || course.level
