@@ -30,8 +30,8 @@ export function useContent() {
 
         try {
             const apiLangCode = langCode ? getApiLanguageCode(langCode) : undefined
-            console.log(`Fetching courses with language: ${apiLangCode}, type: course`);
-            const data = await getContent(apiLangCode, 'course')
+            console.log(`Fetching courses with language: ${apiLangCode}, type: module`);
+            const data = await getContent(apiLangCode, 'module')
 
             console.log('Content data received:', data);
 
