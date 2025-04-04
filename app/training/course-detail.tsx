@@ -1,5 +1,3 @@
-// app/training/course-detail.tsx
-// This file is imported by both app/training/[id]/page.tsx and app/[lang]/training/[id]/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -28,14 +26,8 @@ export default function CourseDetail() {
                 const data = await getContentWithTranslations(id as string)
                 setCourse(data)
 
-                // Default to current language if available as a translation
-                const currentLangTranslation = [data.original, ...data.translations].find(
-                    c => c.language.code === currentLang
-                )
-
-                if (currentLangTranslation) {
-                    setSelectedTranslation(currentLangTranslation.language.code)
-                } else {
+                // If we have the original content, set it as selected
+                if (data && data.original && data.original.language) {
                     setSelectedTranslation(data.original.language.code)
                 }
             } catch (err) {
@@ -51,15 +43,10 @@ export default function CourseDetail() {
         }
     }, [id, currentLang])
 
-    // Get the active content based on selected translation
+    // Get the active content (will always be the original since we don't have translations)
     const getActiveContent = () => {
-        if (!course) return null
-
-        if (course.original.language.code === selectedTranslation) {
-            return course.original
-        }
-
-        return course.translations.find(t => t.language.code === selectedTranslation) || course.original
+        if (!course || !course.original) return null
+        return course.original
     }
 
     const activeContent = getActiveContent()
@@ -88,7 +75,7 @@ export default function CourseDetail() {
         )
     }
 
-    if (error || !course) {
+    if (error || !course || !activeContent) {
         return (
             <div className="mx-auto max-w-3xl px-6 py-16">
                 <div className="rounded-lg bg-red-50 p-6 text-center">
@@ -114,11 +101,11 @@ export default function CourseDetail() {
                         {t('training')}
                     </Link>
                     <span className="mx-2 text-gray-400">/</span>
-                    <span className="text-gray-900">{activeContent?.title}</span>
+                    <span className="text-gray-900">{activeContent.title}</span>
                 </nav>
 
-                {/* Language selector */}
-                {course && (
+                {/* Language selector - only show if we have translations */}
+                {course.translations && course.translations.length > 0 && (
                     <div className="mb-8">
                         <div className="text-sm font-medium text-gray-500">{t('availableLanguages')}:</div>
                         <div className="mt-2 flex flex-wrap gap-2">
@@ -151,83 +138,81 @@ export default function CourseDetail() {
                 )}
 
                 {/* Course content */}
-                {activeContent && (
-                    <div className="grid gap-12 md:grid-cols-2">
-                        <div>
-                            <h1 className="mb-4 text-3xl font-bold">{activeContent.title}</h1>
+                <div className="grid gap-12 md:grid-cols-2">
+                    <div>
+                        <h1 className="mb-4 text-3xl font-bold">{activeContent.title}</h1>
 
-                            <div className="mb-6 flex flex-wrap gap-3">
-                                {activeContent.type && (
-                                    <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800">
-                    {activeContent.type}
-                  </span>
-                                )}
-                                <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
-                  {activeContent.language.name}
-                </span>
-                            </div>
-
-                            <div className="mb-8 text-gray-700">
-                                <p className="whitespace-pre-line">{activeContent.description}</p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-4">
-                                <button
-                                    onClick={handleDownload}
-                                    className="rounded-lg bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-6 py-3 text-white shadow-md hover:shadow-lg"
-                                >
-                                    {activeContent.file_link && activeContent.file_link !== 'no-file'
-                                        ? t('downloadMaterials')
-                                        : t('startCourse')}
-                                </button>
-
-                                <Link
-                                    href={localizedPath('/training')}
-                                    className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-gray-700 shadow-sm hover:bg-gray-50"
-                                >
-                                    {t('browseOtherCourses')}
-                                </Link>
-                            </div>
+                        <div className="mb-6 flex flex-wrap gap-3">
+                            {activeContent.type && (
+                                <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800">
+                                    {activeContent.type}
+                                </span>
+                            )}
+                            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                                {activeContent.language.name}
+                            </span>
                         </div>
 
-                        <div>
-                            <div className="relative aspect-video overflow-hidden rounded-lg">
-                                <Image
-                                    src={activeContent.file_link && activeContent.file_link !== 'no-file'
-                                        ? activeContent.file_link
-                                        : "/placeholder.svg?height=400&width=600"}
-                                    alt={activeContent.title}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
-                            </div>
+                        <div className="mb-8 text-gray-700">
+                            <p className="whitespace-pre-line">{activeContent.description}</p>
+                        </div>
 
-                            <div className="mt-6 rounded-lg bg-gray-50 p-6">
-                                <h3 className="mb-4 text-lg font-medium">{t('courseDetails')}</h3>
+                        <div className="flex flex-wrap gap-4">
+                            <button
+                                onClick={handleDownload}
+                                className="rounded-lg bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-6 py-3 text-white shadow-md hover:shadow-lg"
+                            >
+                                {activeContent.file_link && activeContent.file_link !== 'no-file'
+                                    ? t('downloadMaterials')
+                                    : t('startCourse')}
+                            </button>
 
-                                <div className="space-y-3">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">{t('language')}:</span>
-                                        <span className="font-medium">{activeContent.language.name}</span>
-                                    </div>
+                            <Link
+                                href={localizedPath('/training')}
+                                className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-gray-700 shadow-sm hover:bg-gray-50"
+                            >
+                                {t('browseOtherCourses')}
+                            </Link>
+                        </div>
+                    </div>
 
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">{t('level')}:</span>
-                                        <span className="font-medium">{activeContent.type || t('beginner')}</span>
-                                    </div>
+                    <div>
+                        <div className="relative aspect-video overflow-hidden rounded-lg">
+                            <Image
+                                src={activeContent.file_link && activeContent.file_link !== 'no-file'
+                                    ? activeContent.file_link
+                                    : "/placeholder.svg?height=400&width=600"}
+                                alt={activeContent.title}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        </div>
 
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">{t('lastUpdated')}:</span>
-                                        <span className="font-medium">
-                      {new Date(activeContent.updated_at).toLocaleDateString()}
-                    </span>
-                                    </div>
+                        <div className="mt-6 rounded-lg bg-gray-50 p-6">
+                            <h3 className="mb-4 text-lg font-medium">{t('courseDetails')}</h3>
+
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">{t('language')}:</span>
+                                    <span className="font-medium">{activeContent.language.name}</span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">{t('level')}:</span>
+                                    <span className="font-medium">{activeContent.type || t('beginner')}</span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">{t('lastUpdated')}:</span>
+                                    <span className="font-medium">
+                                        {new Date(activeContent.updated_at).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     )

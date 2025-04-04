@@ -54,19 +54,37 @@ export async function getContent(lang?: string, contentType?: string) {
 // Get content details with translations
 export async function getContentWithTranslations(id: string | number) {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/content/${id}`);
+        // Use the PUBLIC content endpoint with filtering
+        const response = await fetch(`${API_BASE_URL}/content?id=${id}`);
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
-        return data;
+
+        // Extract the content based on response format
+        let contentItem = null;
+
+        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            contentItem = data.data[0]; // First item in data array
+        } else if (data && Array.isArray(data) && data.length > 0) {
+            contentItem = data[0]; // First item if array is directly returned
+        } else {
+            throw new Error('Content not found');
+        }
+
+        // Create a ContentWithTranslations object with just the original content
+        // since we don't have access to translations without admin privileges
+        return {
+            original: contentItem,
+            translations: [] // Empty translations array
+        };
     } catch (error) {
+        console.error('Error in getContentWithTranslations:', error);
         return handleApiError(error);
     }
 }
-
 // Log download event
 export async function logDownload(id: string | number) {
     try {
