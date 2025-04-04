@@ -12,12 +12,20 @@ interface CourseCardProps {
 export default function CourseCard({ course }: CourseCardProps) {
   const { t, localizedPath } = useLanguage()
 
-  // Translate level
-  const translatedLevel = t(course.level.toLowerCase() as any) || course.level
+  if (!course) {
+    console.error('Received null or undefined course in CourseCard');
+    return null;
+  }
 
-  // Format duration with translation
-  const durationParts = course.duration.split(' ')
-  const weeks = durationParts[0]
+  console.log('Rendering course card:', course);
+
+  // Translate level - with safeguards
+  const levelKey = course.level?.toLowerCase() as any || 'beginner';
+  const translatedLevel = t(levelKey) || course.level || 'Beginner';
+
+  // Format duration with translation and safeguards
+  const durationParts = course.duration?.split(' ') || ['4'];
+  const weeks = durationParts[0] || '4';
   const translatedDuration = `${weeks} ${t('weeks')}`
 
   return (
