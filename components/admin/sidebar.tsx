@@ -13,10 +13,12 @@ import {
     Menu,
     X
 } from 'lucide-react'
+import { useLanguage } from '@/app/language-provider'
 
 export default function AdminSidebar() {
     const pathname = usePathname()
     const router = useRouter()
+    const { t, localizedPath } = useLanguage()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const handleLogout = () => {
@@ -24,33 +26,33 @@ export default function AdminSidebar() {
         localStorage.removeItem('adminToken')
 
         // Redirect to login
-        router.push('/admin/login')
+        router.push(localizedPath('/admin/login'))
     }
 
     const navItems = [
         {
-            name: 'Dashboard',
-            href: '/admin/dashboard',
+            name: t('admin_dashboard'),
+            href: localizedPath('/admin/dashboard'),
             icon: <LayoutDashboard className="h-5 w-5" />,
         },
         {
-            name: 'Content',
-            href: '/admin/content',
+            name: t('admin_content'),
+            href: localizedPath('/admin/content'),
             icon: <FileText className="h-5 w-5" />,
         },
         {
-            name: 'Upload',
-            href: '/admin/upload',
+            name: t('admin_upload'),
+            href: localizedPath('/admin/upload'),
             icon: <Upload className="h-5 w-5" />,
         },
         {
-            name: 'Statistics',
-            href: '/admin/stats',
+            name: t('admin_stats'),
+            href: localizedPath('/admin/stats'),
             icon: <BarChart className="h-5 w-5" />,
         },
         {
-            name: 'Languages',
-            href: '/admin/languages',
+            name: t('admin_languages'),
+            href: localizedPath('/admin/languages'),
             icon: <Languages className="h-5 w-5" />,
         },
     ]
@@ -109,7 +111,7 @@ export default function AdminSidebar() {
                             className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         >
                             <LogOut className="mr-3 h-5 w-5" />
-                            Logout
+                            {t('admin_logout')}
                         </button>
                     </div>
                 </div>
@@ -155,7 +157,7 @@ export default function AdminSidebar() {
                                     className="flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                 >
                                     <LogOut className="mr-3 h-5 w-5" />
-                                    Logout
+                                    {t('admin_logout')}
                                 </button>
                             </div>
                         </div>

@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import AdminSidebar from './sidebar'
+import { useLanguage } from '@/app/language-provider'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
     const router = useRouter()
     const pathname = usePathname()
+    const { t, localizedPath } = useLanguage()
 
     useEffect(() => {
         // Check for authentication token
@@ -18,13 +20,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             setIsAuthenticated(isAuth)
 
             // If on login page and already authenticated, redirect to dashboard
-            if (isAuth && pathname === '/admin/login') {
-                router.push('/admin/dashboard')
+            if (isAuth && pathname.includes('/admin/login')) {
+                router.push(localizedPath('/admin/dashboard'))
             }
 
             // If not on login page and not authenticated, redirect to login
-            if (!isAuth && pathname !== '/admin/login') {
-                router.push('/admin/login')
+            if (!isAuth && pathname.includes('/admin') && !pathname.includes('/admin/login')) {
+                router.push(localizedPath('/admin/login'))
             }
         }
 
@@ -33,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Add event listener for storage changes (in case of logout in another tab)
         window.addEventListener('storage', checkAuth)
         return () => window.removeEventListener('storage', checkAuth)
-    }, [pathname, router])
+    }, [pathname, router, localizedPath])
 
     // Show nothing during initial check to prevent flashing
     if (isAuthenticated === null) {
@@ -41,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     // On login page, just show the login component
-    if (pathname === '/admin/login') {
+    if (pathname.includes('/admin/login')) {
         return children
     }
 

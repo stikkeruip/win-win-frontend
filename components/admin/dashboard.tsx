@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FileText, Upload, Languages, Clock } from 'lucide-react'
 import { makeAuthenticatedRequest } from '@/lib/admin-api'
+import { useLanguage } from '@/app/language-provider'
 
 interface StatsSummary {
     totalContent: number
@@ -18,6 +19,7 @@ interface StatsSummary {
 }
 
 export default function AdminDashboard() {
+    const { t, localizedPath } = useLanguage()
     const [stats, setStats] = useState<StatsSummary | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -81,7 +83,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('admin_dashboard')}</h1>
 
             {/* Stats Cards */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
                             <FileText className="h-6 w-6 text-orange-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Total Content</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('admin_totalContent')}</h3>
                             <p className="text-3xl font-bold text-gray-900">{stats?.totalContent || 0}</p>
                         </div>
                     </div>
@@ -103,7 +105,7 @@ export default function AdminDashboard() {
                             <Languages className="h-6 w-6 text-blue-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Languages</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('admin_totalLanguages')}</h3>
                             <p className="text-3xl font-bold text-gray-900">{stats?.totalLanguages || 0}</p>
                         </div>
                     </div>
@@ -115,7 +117,7 @@ export default function AdminDashboard() {
                             <Clock className="h-6 w-6 text-green-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Total Visits</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('admin_totalVisits')}</h3>
                             <p className="text-3xl font-bold text-gray-900">{stats?.totalVisits || 0}</p>
                         </div>
                     </div>
@@ -124,35 +126,35 @@ export default function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-medium text-gray-900">Quick Actions</h2>
+                <h2 className="mb-4 text-lg font-medium text-gray-900">{t('admin_quickActions')}</h2>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                     <Link
-                        href="/admin/content/create"
+                        href={localizedPath('/admin/content/create')}
                         className="flex items-center rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                     >
                         <FileText className="mr-3 h-5 w-5 text-gray-600" />
-                        <span>Create New Content</span>
+                        <span>{t('admin_createNewContent')}</span>
                     </Link>
                     <Link
-                        href="/admin/upload"
+                        href={localizedPath('/admin/upload')}
                         className="flex items-center rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                     >
                         <Upload className="mr-3 h-5 w-5 text-gray-600" />
-                        <span>Upload Files</span>
+                        <span>{t('admin_uploadFiles')}</span>
                     </Link>
                     <Link
-                        href="/admin/content"
+                        href={localizedPath('/admin/content')}
                         className="flex items-center rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                     >
                         <FileText className="mr-3 h-5 w-5 text-gray-600" />
-                        <span>Manage Content</span>
+                        <span>{t('admin_manageContent')}</span>
                     </Link>
                 </div>
             </div>
 
             {/* Recent Content */}
             <div className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-medium text-gray-900">Recent Content</h2>
+                <h2 className="mb-4 text-lg font-medium text-gray-900">{t('admin_recentContent')}</h2>
                 <div className="overflow-hidden rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -161,22 +163,22 @@ export default function AdminDashboard() {
                                 scope="col"
                                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                             >
-                                Title
+                                {t('admin_title')}
                             </th>
                             <th
                                 scope="col"
                                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                             >
-                                Language
+                                {t('language')}
                             </th>
                             <th
                                 scope="col"
                                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                             >
-                                Date
+                                {t('admin_date')}
                             </th>
                             <th scope="col" className="relative px-6 py-3">
-                                <span className="sr-only">Edit</span>
+                                <span className="sr-only">{t('admin_edit')}</span>
                             </th>
                         </tr>
                         </thead>
@@ -194,10 +196,10 @@ export default function AdminDashboard() {
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                     <Link
-                                        href={`/admin/content/edit/${content.id}`}
+                                        href={localizedPath(`/admin/content/edit/${content.id}`)}
                                         className="text-blue-600 hover:text-blue-900"
                                     >
-                                        Edit
+                                        {t('admin_edit')}
                                     </Link>
                                 </td>
                             </tr>
@@ -205,7 +207,7 @@ export default function AdminDashboard() {
                         {(!stats?.recentContent || stats.recentContent.length === 0) && (
                             <tr>
                                 <td className="px-6 py-4 text-center text-sm text-gray-500" colSpan={4}>
-                                    No content available
+                                    {t('admin_noContent')}
                                 </td>
                             </tr>
                         )}
@@ -215,10 +217,10 @@ export default function AdminDashboard() {
                 {stats?.totalContent && stats.totalContent > 5 ? (
                     <div className="mt-4 text-center">
                         <Link
-                            href="/admin/content"
+                            href={localizedPath('/admin/content')}
                             className="text-sm font-medium text-blue-600 hover:text-blue-800"
                         >
-                            View all content
+                            {t('admin_viewAllContent')}
                         </Link>
                     </div>
                 ) : null}
