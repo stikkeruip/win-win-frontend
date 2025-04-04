@@ -94,7 +94,24 @@ export type TranslationKey =
     | 'admin_username'
     | 'admin_password'
     | 'admin_loginError'
-    | 'admin_loginDescription';
+    | 'admin_loginDescription'
+    | 'admin_uploadedFiles'
+    | 'admin_orDragAndDrop'
+    | 'admin_supportedFileTypes'
+    | 'admin_supportedFileFormats'
+    | 'admin_uploading'
+    | 'admin_urlCopied'
+    | 'admin_uploadFailed'
+    | 'admin_contentVisitDistribution'
+    | 'admin_contentCount'
+    | 'admin_avgVisitsPerContent'
+    | 'admin_visits'
+    | 'admin_noVisitData'
+    | 'admin_refresh'
+    | 'admin_tryChangingSearch'
+    | 'admin_getStarted'
+    | 'admin_status'
+    | 'admin_failedLoadStats';
 
 // Create translations for each language
 const translations: Record<string, Record<TranslationKey, string>> = {
@@ -193,7 +210,24 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_username: 'Username',
         admin_password: 'Password',
         admin_loginError: 'Login Error',
-        admin_loginDescription: 'Login to access the content management system'
+        admin_loginDescription: 'Login to access the content management system',
+        admin_uploadedFiles: 'Uploaded Files',
+        admin_orDragAndDrop: 'or drag and drop',
+        admin_supportedFileTypes: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG up to 10MB',
+        admin_supportedFileFormats: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.',
+        admin_uploading: 'Uploading...',
+        admin_urlCopied: 'URL copied to clipboard',
+        admin_uploadFailed: 'Upload failed',
+        admin_contentVisitDistribution: 'Content Visit Distribution',
+        admin_contentCount: 'Content Count',
+        admin_avgVisitsPerContent: 'Avg. Visits Per Content',
+        admin_visits: 'Visits',
+        admin_noVisitData: 'No visit data available',
+        admin_refresh: 'Refresh',
+        admin_tryChangingSearch: 'Try changing your search criteria or filters',
+        admin_getStarted: 'Get started by creating your first content',
+        admin_status: 'Status',
+        admin_failedLoadStats: 'Failed to load statistics. Please try again.'
     },
 
     fr: {
@@ -290,7 +324,24 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_username: 'Nom d\'utilisateur',
         admin_password: 'Mot de passe',
         admin_loginError: 'Erreur de connexion',
-        admin_loginDescription: 'Connectez-vous pour accéder au système de gestion de contenu'
+        admin_loginDescription: 'Connectez-vous pour accéder au système de gestion de contenu',
+        admin_uploadedFiles: 'Uploaded Files',
+        admin_orDragAndDrop: 'or drag and drop',
+        admin_supportedFileTypes: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG up to 10MB',
+        admin_supportedFileFormats: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.',
+        admin_uploading: 'Uploading...',
+        admin_urlCopied: 'URL copied to clipboard',
+        admin_uploadFailed: 'Upload failed',
+        admin_contentVisitDistribution: 'Content Visit Distribution',
+        admin_contentCount: 'Content Count',
+        admin_avgVisitsPerContent: 'Avg. Visits Per Content',
+        admin_visits: 'Visits',
+        admin_noVisitData: 'No visit data available',
+        admin_refresh: 'Refresh',
+        admin_tryChangingSearch: 'Try changing your search criteria or filters',
+        admin_getStarted: 'Get started by creating your first content',
+        admin_status: 'Status',
+        admin_failedLoadStats: 'Failed to load statistics. Please try again.'
     },
 
     pt: {
@@ -387,7 +438,24 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_username: 'Nome de usuário',
         admin_password: 'Senha',
         admin_loginError: 'Erro de login',
-        admin_loginDescription: 'Faça login para acessar o sistema de gerenciamento de conteúdo'
+        admin_loginDescription: 'Faça login para acessar o sistema de gerenciamento de conteúdo',
+        admin_uploadedFiles: 'Arquivos Enviados',
+        admin_orDragAndDrop: 'ou arraste e solte',
+        admin_supportedFileTypes: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, JPG, PNG até 10MB',
+        admin_supportedFileFormats: 'PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, MP4, etc.',
+        admin_uploading: 'Enviando...',
+        admin_urlCopied: 'URL copiada para a área de transferência',
+        admin_uploadFailed: 'Falha no upload',
+        admin_contentVisitDistribution: 'Distribuição de Visitas por Conteúdo',
+        admin_contentCount: 'Total de Conteúdo',
+        admin_avgVisitsPerContent: 'Média de Visitas por Conteúdo',
+        admin_visits: 'Visitas',
+        admin_noVisitData: 'Nenhum dado de visita disponível',
+        admin_refresh: 'Atualizar',
+        admin_tryChangingSearch: 'Tente alterar seus critérios de pesquisa ou filtros',
+        admin_getStarted: 'Comece criando seu primeiro conteúdo',
+        admin_status: 'Status',
+        admin_failedLoadStats: 'Falha ao carregar estatísticas. Por favor, tente novamente.'
     },
 
     ar: {
@@ -485,6 +553,23 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_password: 'كلمة المرور',
         admin_loginError: 'خطأ في تسجيل الدخول',
         admin_loginDescription: 'تسجيل الدخول للوصول إلى نظام إدارة المحتوى',
+        admin_uploadedFiles: 'الملفات المرفوعة',
+        admin_orDragAndDrop: 'أو اسحب وأفلت',
+        admin_supportedFileTypes: 'PDF، DOC، DOCX، PPT، PPTX، XLS، XLSX، MP4، JPG، PNG حتى 10 ميجابايت',
+        admin_supportedFileFormats: 'PDF، DOC، DOCX، PPT، PPTX، XLS، XLSX، MP4، الخ',
+        admin_uploading: 'جاري الرفع...',
+        admin_urlCopied: 'تم نسخ الرابط إلى الحافظة',
+        admin_uploadFailed: 'فشل الرفع',
+        admin_contentVisitDistribution: 'توزيع زيارات المحتوى',
+        admin_contentCount: 'عدد المحتوى',
+        admin_avgVisitsPerContent: 'متوسط الزيارات لكل محتوى',
+        admin_visits: 'الزيارات',
+        admin_noVisitData: 'لا توجد بيانات زيارة متاحة',
+        admin_refresh: 'تحديث',
+        admin_tryChangingSearch: 'حاول تغيير معايير البحث أو الفلاتر الخاصة بك',
+        admin_getStarted: 'ابدأ بإنشاء المحتوى الأول الخاص بك',
+        admin_status: 'الحالة',
+        admin_failedLoadStats: 'فشل تحميل الإحصائيات. يرجى المحاولة مرة أخرى.'
     }
 };
 

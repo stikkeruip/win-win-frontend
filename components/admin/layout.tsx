@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import AdminSidebar from './sidebar'
 import { useLanguage } from '@/app/language-provider'
+import { AdminTranslationProvider } from './admin-translation-provider'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -42,20 +43,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return null
     }
 
-    // On login page, just show the login component
+    // On login page, just show the login component wrapped in translation provider
     if (pathname.includes('/admin/login')) {
-        return children
+        return (
+            <AdminTranslationProvider>
+                {children}
+            </AdminTranslationProvider>
+        )
     }
 
     // If authenticated and not on login page, show admin layout
     if (isAuthenticated) {
         return (
-            <div className="flex h-screen bg-gray-100">
-                <AdminSidebar />
-                <div className="flex-1 overflow-auto">
-                    <main className="p-6">{children}</main>
+            <AdminTranslationProvider>
+                <div className="flex h-screen bg-gray-100">
+                    <AdminSidebar />
+                    <div className="flex-1 overflow-auto">
+                        <main className="p-6">{children}</main>
+                    </div>
                 </div>
-            </div>
+            </AdminTranslationProvider>
         )
     }
 

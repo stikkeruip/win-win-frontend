@@ -19,6 +19,7 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts'
+import { useAdminTranslation } from './admin-translation-provider'
 
 interface ContentVisit {
     id: number
@@ -32,6 +33,7 @@ interface VisitStats {
 }
 
 export default function AdminStats() {
+    const { t } = useAdminTranslation()
     const [visitStats, setVisitStats] = useState<VisitStats | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -45,7 +47,7 @@ export default function AdminStats() {
             setVisitStats(data)
         } catch (err: any) {
             console.error('Error fetching visit stats:', err)
-            setError(err.message || 'Failed to load statistics. Please try again.')
+            setError(err.message || t('failedLoadStats'))
         } finally {
             setIsLoading(false)
         }
@@ -58,14 +60,14 @@ export default function AdminStats() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Statistics</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('statistics')}</h1>
                 <button
                     onClick={fetchStats}
                     disabled={isLoading}
                     className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                     <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    Refresh
+                    {t('refresh')}
                 </button>
             </div>
 
@@ -81,7 +83,7 @@ export default function AdminStats() {
                             <Eye className="h-6 w-6 text-blue-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Total Visits</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('totalVisits')}</h3>
                             {isLoading ? (
                                 <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
                             ) : (
@@ -99,7 +101,7 @@ export default function AdminStats() {
                             <BarChartIcon className="h-6 w-6 text-green-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Content Count</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('contentCount')}</h3>
                             {isLoading ? (
                                 <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
                             ) : (
@@ -117,7 +119,7 @@ export default function AdminStats() {
                             <TrendingUp className="h-6 w-6 text-purple-600" />
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">Avg. Visits Per Content</h3>
+                            <h3 className="text-lg font-medium text-gray-900">{t('avgVisitsPerContent')}</h3>
                             {isLoading ? (
                                 <div className="h-8 w-16 animate-pulse rounded bg-gray-200"></div>
                             ) : (
@@ -134,7 +136,7 @@ export default function AdminStats() {
 
             {/* Content Visits Chart */}
             <div className="rounded-lg bg-white p-6 shadow">
-                <h2 className="mb-4 text-lg font-medium text-gray-900">Content Visit Distribution</h2>
+                <h2 className="mb-4 text-lg font-medium text-gray-900">{t('contentVisitDistribution')}</h2>
                 {isLoading ? (
                     <div className="flex h-80 items-center justify-center">
                         <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
@@ -162,12 +164,12 @@ export default function AdminStats() {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="count" name="Visits" fill="#4f46e5" />
+                            <Bar dataKey="count" name={t('visits')} fill="#4f46e5" />
                         </BarChart>
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex h-80 items-center justify-center">
-                        <p className="text-gray-500">No visit data available</p>
+                        <p className="text-gray-500">{t('noVisitData')}</p>
                     </div>
                 )}
             </div>

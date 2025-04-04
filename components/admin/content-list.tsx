@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { Plus, Edit, Trash2, Search, Filter } from 'lucide-react'
 import { getAdminContent, deleteContent, getLanguages } from '@/lib/admin-api'
 import { Content, Language } from '@/lib/types'
+import { useAdminTranslation } from './admin-translation-provider'
 
 export default function AdminContentList() {
+    const { t, localizedPath } = useAdminTranslation()
     const [content, setContent] = useState<Content[]>([])
     const [languages, setLanguages] = useState<Language[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -94,13 +96,13 @@ export default function AdminContentList() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('contentManagement')}</h1>
                 <Link
-                    href="/admin/content/create"
+                    href={localizedPath('/admin/content/create')}
                     className="inline-flex items-center rounded-md bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-4 py-2 text-sm font-medium text-white shadow hover:from-[#FF8A3D] hover:to-[#FF7A2D]"
                 >
                     <Plus className="mr-2 h-5 w-5" />
-                    Create New
+                    {t('createNewContent')}
                 </Link>
             </div>
 
@@ -113,7 +115,7 @@ export default function AdminContentList() {
                     <input
                         type="text"
                         className="block w-full rounded-md border-gray-300 pl-10 focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                        placeholder="Search content..."
+                        placeholder={`${t('search')} ${t('content').toLowerCase()}...`}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -126,7 +128,7 @@ export default function AdminContentList() {
                             value={selectedLanguage || ''}
                             onChange={(e) => setSelectedLanguage(e.target.value || null)}
                         >
-                            <option value="">All Languages</option>
+                            <option value="">{t('allLanguages')}</option>
                             {languages.map((language) => (
                                 <option key={language.id} value={language.code}>
                                     {language.name}
@@ -141,7 +143,7 @@ export default function AdminContentList() {
                             value={selectedType || ''}
                             onChange={(e) => setSelectedType(e.target.value || null)}
                         >
-                            <option value="">All Types</option>
+                            <option value="">{t('allTypes')}</option>
                             {contentTypes.map((type) => (
                                 <option key={type} value={type}>
                                     {type}
@@ -172,31 +174,31 @@ export default function AdminContentList() {
                                     scope="col"
                                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                 >
-                                    Title
+                                    {t('title')}
                                 </th>
                                 <th
                                     scope="col"
                                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                 >
-                                    Language
+                                    {t('language')}
                                 </th>
                                 <th
                                     scope="col"
                                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                 >
-                                    Type
+                                    {t('contentType')}
                                 </th>
                                 <th
                                     scope="col"
                                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                 >
-                                    Status
+                                    {t('status')}
                                 </th>
                                 <th
                                     scope="col"
                                     className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
                                 >
-                                    Actions
+                                    {t('actions')}
                                 </th>
                             </tr>
                             </thead>
@@ -215,22 +217,22 @@ export default function AdminContentList() {
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                         {item.is_original ? (
                                             <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                          Original
-                        </span>
+                                                {t('original')}
+                                            </span>
                                         ) : (
                                             <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-                          Translation
-                        </span>
+                                                {t('translation')}
+                                            </span>
                                         )}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                         <div className="flex justify-end space-x-2">
                                             <Link
-                                                href={`/admin/content/edit/${item.id}`}
+                                                href={localizedPath(`/admin/content/edit/${item.id}`)}
                                                 className="text-blue-600 hover:text-blue-900"
                                             >
                                                 <Edit className="h-5 w-5" />
-                                                <span className="sr-only">Edit</span>
+                                                <span className="sr-only">{t('edit')}</span>
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(item.id)}
@@ -242,7 +244,7 @@ export default function AdminContentList() {
                                                 ) : (
                                                     <Trash2 className="h-5 w-5" />
                                                 )}
-                                                <span className="sr-only">Delete</span>
+                                                <span className="sr-only">{t('delete')}</span>
                                             </button>
                                         </div>
                                     </td>
@@ -256,19 +258,19 @@ export default function AdminContentList() {
                         <div className="mb-4 rounded-full bg-gray-100 p-3">
                             <Filter className="h-6 w-6 text-gray-400" />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900">No content found</h3>
+                        <h3 className="text-lg font-medium text-gray-900">{t('noContent')}</h3>
                         <p className="mt-1 text-sm text-gray-500">
                             {searchTerm || selectedLanguage || selectedType
-                                ? 'Try changing your search criteria or filters'
-                                : 'Get started by creating your first content'}
+                                ? t('tryChangingSearch')
+                                : t('getStarted')}
                         </p>
                         {!searchTerm && !selectedLanguage && !selectedType && (
                             <Link
-                                href="/admin/content/create"
+                                href={localizedPath('/admin/content/create')}
                                 className="mt-4 inline-flex items-center rounded-md bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-4 py-2 text-sm font-medium text-white shadow hover:from-[#FF8A3D] hover:to-[#FF7A2D]"
                             >
                                 <Plus className="mr-2 h-5 w-5" />
-                                Create New Content
+                                {t('createNewContent')}
                             </Link>
                         )}
                     </div>

@@ -1,3 +1,4 @@
+// Export all admin components
 export { default as AdminLayout } from './layout'
 export { default as AdminSidebar } from './sidebar'
 export { default as AdminLogin } from './login'
@@ -7,3 +8,9 @@ export { default as AdminContentForm } from './content-form'
 export { default as AdminFileUpload } from './file-upload'
 export { default as AdminStats } from './stats'
 export { default as AdminLanguages } from './languages'
+
+// Export translation provider
+export {
+    AdminTranslationProvider,
+    useAdminTranslation
+} from './admin-translation-provider'
