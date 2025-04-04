@@ -2,10 +2,17 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useTranslations } from '@/hooks/use-translations'
+import { useLanguage } from './language-provider'
+import { useEffect } from 'react'
 
 export default function Home() {
-  const { t, localizedPath } = useTranslations()
+  const { t, localizedPath, currentLang } = useLanguage()
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Home page - Current language:', currentLang)
+    console.log('Home page - welcomeTitle translation:', t('welcomeTitle'))
+  }, [currentLang, t])
 
   return (
       <div className="relative overflow-hidden bg-white">
