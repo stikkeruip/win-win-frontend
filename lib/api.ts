@@ -36,15 +36,22 @@ export async function getContent(lang?: string, contentType?: string) {
         // Check if the data property exists and is an array
         if (data && data.data && Array.isArray(data.data)) {
             return data.data;
+        } else if (data && Array.isArray(data)) {
+            // Some APIs might return the array directly
+            return data;
         } else {
-            // If not, log the structure and return an empty array
-            console.error('Unexpected API response structure:', data);
+            // Return empty array for null data
+            console.warn('API returned null or invalid data, using empty array');
             return [];
         }
     } catch (error) {
-        return handleApiError(error);
+        console.error('Error fetching content:', error);
+        // Return empty array instead of rejecting to avoid UI crashes
+        return [];
     }
-}// Get content details with translations
+}
+
+// Get content details with translations
 export async function getContentWithTranslations(id: string | number) {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/content/${id}`);
@@ -87,9 +94,19 @@ export async function getLanguages() {
         }
 
         const data = await response.json();
-        return data.data as Language[];
+
+        // Check data structure
+        if (data && data.data && Array.isArray(data.data)) {
+            return data.data as Language[];
+        } else if (data && Array.isArray(data)) {
+            return data as Language[];
+        }
+
+        console.warn('Languages API returned invalid data structure');
+        return [];
     } catch (error) {
-        return handleApiError(error);
+        console.error('Error fetching languages:', error);
+        return [];
     }
 }
 

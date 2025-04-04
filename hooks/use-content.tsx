@@ -35,23 +35,45 @@ export function useContent() {
 
             console.log('Content data received:', data);
 
-            // The data should be an array at this point because getContent now handles the structure
-            if (Array.isArray(data)) {
-                console.log(`Received ${data.length} courses from API`);
-                // Map backend content to frontend course objects
-                const mappedCourses = data.map((content: Content) => {
-                    console.log('Mapping content to course:', content);
-                    return mapContentToCourse(content);
-                });
-                setCourses(mappedCourses);
-            } else {
-                console.error('Data is not an array after processing:', data);
+            // If data is empty or null, show appropriate message
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.log('No courses available');
                 setCourses([]);
-                setError('No courses available for this language');
+                setError(null); // No error, just empty
+            } else {
+                console.log(`Received ${data.length} courses from API`);
+
+                // Map backend content to frontend course objects
+                try {
+                    const mappedCourses = data.map((content: any) => {
+                        console.log('Mapping content to course:', content);
+                        // Ensure the content object has required properties
+                        if (!content || typeof content !== 'object') {
+                            throw new Error('Invalid content object received from API');
+                        }
+
+                        return {
+                            id: content.id?.toString() || 'unknown',
+                            title: content.title || 'Untitled Course',
+                            description: content.description || 'No description available',
+                            image: content.file_link && content.file_link !== 'no-file'
+                                ? content.file_link : '/placeholder.svg',
+                            languages: content.language?.name ? [content.language.name] : ['English'],
+                            level: content.type || 'Beginner',
+                            duration: "4 weeks" // Default duration since it's not in the API
+                        };
+                    });
+                    setCourses(mappedCourses);
+                } catch (err) {
+                    console.error('Error mapping courses:', err);
+                    setError('Error processing course data');
+                    setCourses([]);
+                }
             }
         } catch (err) {
             console.error('Error fetching courses:', err)
             setError('Failed to load courses. Please try again later.')
+            setCourses([]);
         } finally {
             setIsLoading(false)
         }
