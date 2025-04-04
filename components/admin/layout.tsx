@@ -1,0 +1,62 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import AdminSidebar from './sidebar'
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+    const router = useRouter()
+    const pathname = usePathname()
+
+    useEffect(() => {
+        // Check for authentication token
+        const checkAuth = () => {
+            const token = localStorage.getItem('adminToken')
+            const isAuth = !!token
+
+            setIsAuthenticated(isAuth)
+
+            // If on login page and already authenticated, redirect to dashboard
+            if (isAuth && pathname === '/admin/login') {
+                router.push('/admin/dashboard')
+            }
+
+            // If not on login page and not authenticated, redirect to login
+            if (!isAuth && pathname !== '/admin/login') {
+                router.push('/admin/login')
+            }
+        }
+
+        checkAuth()
+
+        // Add event listener for storage changes (in case of logout in another tab)
+        window.addEventListener('storage', checkAuth)
+        return () => window.removeEventListener('storage', checkAuth)
+    }, [pathname, router])
+
+    // Show nothing during initial check to prevent flashing
+    if (isAuthenticated === null) {
+        return null
+    }
+
+    // On login page, just show the login component
+    if (pathname === '/admin/login') {
+        return children
+    }
+
+    // If authenticated and not on login page, show admin layout
+    if (isAuthenticated) {
+        return (
+            <div className="flex h-screen bg-gray-100">
+                <AdminSidebar />
+                <div className="flex-1 overflow-auto">
+                    <main className="p-6">{children}</main>
+                </div>
+            </div>
+        )
+    }
+
+    // While redirecting to login
+    return null
+}
