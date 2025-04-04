@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 
@@ -19,6 +19,7 @@ export default function LanguageSelector() {
     const router = useRouter()
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
 
     // Determine current language from URL
     const currentLanguageCode = pathname.split('/')[1]
@@ -29,9 +30,14 @@ export default function LanguageSelector() {
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = () => setIsOpen(false)
-        document.addEventListener("click", handleClickOutside)
-        return () => document.removeEventListener("click", handleClickOutside)
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false)
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
     // Get the path without the language prefix
@@ -46,13 +52,10 @@ export default function LanguageSelector() {
     }
 
     return (
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
             <button
                 className="flex items-center space-x-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                onClick={(e) => {
-                    e.stopPropagation()
-                    setIsOpen(!isOpen)
-                }}
+                onClick={() => setIsOpen(!isOpen)}
             >
                 <span>{currentLanguage?.flag || "🌐"}</span>
                 <span className="hidden sm:inline">{currentLanguage?.name || "English"}</span>
@@ -68,11 +71,22 @@ export default function LanguageSelector() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     {languages.map((language) => {
-                        const path = language.code === "en"
-                            ? getPathWithoutLang()
-                            : `/${language.code}${getPathWithoutLang()}`
+                        // Fix the path generation logic
+                        let path;
+                        if (language.code === "en") {
+                            // For English, use the path without any language prefix
+                            path = getPathWithoutLang();
+                            // If we're already on a language-specific root page, go to English root
+                            if (path === "/" && isValidLang) {
+                                path = "/";
+                            }
+                        } else {
+                            // For other languages, add the language prefix
+                            const basePath = getPathWithoutLang();
+                            path = `/${language.code}${basePath === "/" ? "" : basePath}`;
+                        }
 
                         return (
                             <Link

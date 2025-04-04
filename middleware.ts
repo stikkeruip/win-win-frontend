@@ -4,16 +4,21 @@ import type { NextRequest } from 'next/server'
 // Define supported languages
 const supportedLanguages = ['en', 'fr', 'ar', 'pt']
 
-// Regular expressions to match language-related routes
-const publicFileRegex = /\.(.*)$/
-const languagePathRegex = /^\/(en|fr|ar|pt)(?:\/(.*))?$/
+// Regular expressions to match exclusions
+const publicFileRegex = /\.(jpg|jpeg|png|gif|svg|ico|webp|js|css|woff|woff2)$/
+const apiRouteRegex = /^\/api\/.*$/
+const nextJsRoutesRegex = /^\/_next\/.*$/
 
 export function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
-    // Ignore requests for public files like images, fonts, etc
-    if (publicFileRegex.test(pathname)) {
-        return
+    // Skip static files, API routes, and Next.js internal routes
+    if (
+        publicFileRegex.test(pathname) ||
+        apiRouteRegex.test(pathname) ||
+        nextJsRoutesRegex.test(pathname)
+    ) {
+        return NextResponse.next()
     }
 
     // Add the pathname to response headers for server components to access
@@ -21,8 +26,10 @@ export function middleware(request: NextRequest) {
     requestHeaders.set('x-pathname', pathname)
 
     // Check if pathname already has a valid language prefix
-    const languageMatch = pathname.match(languagePathRegex)
-    if (languageMatch) {
+    const firstSegment = pathname.split('/')[1]
+    const hasLanguagePrefix = supportedLanguages.includes(firstSegment)
+
+    if (hasLanguagePrefix) {
         // Return with the pathname header added
         return NextResponse.next({
             request: {
@@ -59,8 +66,17 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    // If the preferred language is English, no redirect needed
-    if (preferredLanguage === 'en') {
+    // If the preferred language is English, no redirect needed for root
+    if (preferredLanguage === 'en' && pathname === '/') {
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders
+            }
+        })
+    }
+
+    // If the preferred language is English but not on root, don't redirect
+    if (preferredLanguage === 'en' && pathname !== '/') {
         return NextResponse.next({
             request: {
                 headers: requestHeaders
@@ -76,7 +92,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Skip all internal paths (_next/, /_vercel/)
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        // Match all paths except static files, API routes, and Next.js internal routes
+        '/((?!api|_next|.*\\..*).*)',
     ],
 }
