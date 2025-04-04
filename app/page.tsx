@@ -8,9 +8,10 @@ import { useEffect } from 'react'
 export default function Home() {
   const { t, localizedPath, currentLang } = useLanguage()
 
-  // Ensure the page re-renders when language changes
+  // Debug logging
   useEffect(() => {
-    // This empty dependency array ensures the component re-renders when currentLang changes
+    console.log('Home page - Current language:', currentLang)
+    console.log('Home page - welcomeTitle translation:', t('welcomeTitle'))
   }, [currentLang, t])
 
   return (

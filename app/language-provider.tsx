@@ -34,16 +34,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const [currentLang, setCurrentLang] = useState<string>(isValidLang ? langSegment : 'en')
 
     // Get translations for current language
-    const translationsObj = getTranslations(currentLang)
+    const translations = getTranslations(currentLang)
 
-    // Update language when URL changes
+    // Update current language when pathname changes
     useEffect(() => {
         const langSegment = pathname.split('/')[1]
         if (supportedLanguages.includes(langSegment)) {
             setCurrentLang(langSegment)
+            console.log('Language Provider - Setting language to:', langSegment)
 
             // Change document direction based on language
-            document.documentElement.dir = langSegment === 'ar' ? 'rtl' : 'ltr'
+            if (langSegment === 'ar') {
+                document.documentElement.dir = 'rtl'
+            } else {
+                document.documentElement.dir = 'ltr'
+            }
 
             // Set language attribute on HTML element
             document.documentElement.lang = langSegment
@@ -53,12 +58,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // Get path without language prefix
     const pathWithoutLang = isValidLang ? pathname.substring(langSegment.length + 1) || '/' : pathname
 
-    // Helper function to translate a key
-    const t = (key: TranslationKey): string => {
-        const translation = translationsObj[key]
-        return translation || key
-    }
-
     // Helper function to add language prefix to a path
     const localizedPath = (path: string, lang = currentLang) => {
         // Handle root path specially
@@ -67,18 +66,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Otherwise, add language prefix unless it's for English (the default)
-        return lang === 'en' ? path : `/${lang}${path.startsWith('/') ? path : `/${path}`}`
+        return lang === 'en' ? path : `/${lang}${path}`
     }
 
-    const contextValue = {
-        currentLang,
-        t,
-        pathWithoutLang,
-        localizedPath
-    }
+    // Helper function to translate a key
+    const t = (key: TranslationKey) => translations[key] || key
 
     return (
-        <LanguageContext.Provider value={contextValue}>
+        <LanguageContext.Provider value={{ currentLang, t, pathWithoutLang, localizedPath }}>
             {children}
         </LanguageContext.Provider>
     )
