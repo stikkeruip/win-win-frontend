@@ -1,4 +1,5 @@
-// Type for our translations
+// lib/translations.ts (updated)
+// Update the TranslationKey type to include the new keys
 export type TranslationKey =
     | 'home'
     | 'training'
@@ -31,7 +32,16 @@ export type TranslationKey =
     | 'beginner'
     | 'intermediate'
     | 'advanced'
-    | 'weeks';
+    | 'weeks'
+    // Course detail page translations
+    | 'availableLanguages'
+    | 'downloadMaterials'
+    | 'startCourse'
+    | 'browseOtherCourses'
+    | 'courseDetails'
+    | 'language'
+    | 'level'
+    | 'lastUpdated';
 
 // Create translations for each language
 const translations: Record<string, Record<TranslationKey, string>> = {
@@ -67,7 +77,16 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         beginner: 'Beginner',
         intermediate: 'Intermediate',
         advanced: 'Advanced',
-        weeks: 'weeks'
+        weeks: 'weeks',
+        // Course detail page translations
+        availableLanguages: 'Available Languages',
+        downloadMaterials: 'Download Materials',
+        startCourse: 'Start Course',
+        browseOtherCourses: 'Browse Other Courses',
+        courseDetails: 'Course Details',
+        language: 'Language',
+        level: 'Level',
+        lastUpdated: 'Last Updated'
     },
 
     fr: {
@@ -102,7 +121,16 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         beginner: 'Débutant',
         intermediate: 'Intermédiaire',
         advanced: 'Avancé',
-        weeks: 'semaines'
+        weeks: 'semaines',
+        // Course detail page translations
+        availableLanguages: 'Langues Disponibles',
+        downloadMaterials: 'Télécharger les Matériaux',
+        startCourse: 'Commencer le Cours',
+        browseOtherCourses: 'Explorer D\'autres Cours',
+        courseDetails: 'Détails du Cours',
+        language: 'Langue',
+        level: 'Niveau',
+        lastUpdated: 'Dernière Mise à Jour'
     },
 
     ar: {
@@ -137,7 +165,16 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         beginner: 'مبتدئ',
         intermediate: 'متوسط',
         advanced: 'متقدم',
-        weeks: 'أسابيع'
+        weeks: 'أسابيع',
+        // Course detail page translations
+        availableLanguages: 'اللغات المتوفرة',
+        downloadMaterials: 'تنزيل المواد',
+        startCourse: 'ابدأ الدورة',
+        browseOtherCourses: 'تصفح الدورات الأخرى',
+        courseDetails: 'تفاصيل الدورة',
+        language: 'اللغة',
+        level: 'المستوى',
+        lastUpdated: 'آخر تحديث'
     },
 
     pt: {
@@ -172,7 +209,16 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         beginner: 'Iniciante',
         intermediate: 'Intermediário',
         advanced: 'Avançado',
-        weeks: 'semanas'
+        weeks: 'semanas',
+        // Course detail page translations
+        availableLanguages: 'Idiomas Disponíveis',
+        downloadMaterials: 'Baixar Materiais',
+        startCourse: 'Iniciar Curso',
+        browseOtherCourses: 'Navegar por Outros Cursos',
+        courseDetails: 'Detalhes do Curso',
+        language: 'Idioma',
+        level: 'Nível',
+        lastUpdated: 'Última Atualização'
     }
 };
 
