@@ -2,7 +2,9 @@
 
 import { usePathname } from 'next/navigation'
 import { getTranslations, type TranslationKey } from '@/lib/translations'
-import { languages } from '@/components/language-selector'
+
+// Define supported languages directly here to avoid circular dependencies
+const supportedLanguages = ['en', 'fr', 'ar', 'pt']
 
 export function useTranslations() {
     const pathname = usePathname()
@@ -11,7 +13,7 @@ export function useTranslations() {
     const langSegment = pathname.split('/')[1]
 
     // Check if this is a valid language code
-    const isValidLang = languages.some(lang => lang.code === langSegment)
+    const isValidLang = supportedLanguages.includes(langSegment)
 
     // Use the language from URL, or default to English
     const currentLang = isValidLang ? langSegment : 'en'

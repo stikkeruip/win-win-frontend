@@ -6,7 +6,7 @@ const supportedLanguages = ['en', 'fr', 'ar', 'pt']
 
 // Regular expressions to match language-related routes
 const publicFileRegex = /\.(.*)$/
-const languagePathRegex = /^\/(?<lang>(en|fr|ar|pt))(?:\/(?<path>.*))?$/
+const languagePathRegex = /^\/(en|fr|ar|pt)(?:\/(.*))?$/
 
 export function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
@@ -16,10 +16,19 @@ export function middleware(request: NextRequest) {
         return
     }
 
+    // Add the pathname to response headers for server components to access
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-pathname', pathname)
+
     // Check if pathname already has a valid language prefix
     const languageMatch = pathname.match(languagePathRegex)
     if (languageMatch) {
-        return
+        // Return with the pathname header added
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders
+            }
+        })
     }
 
     // Determine the preferred language from the Accept-Language header
@@ -52,7 +61,11 @@ export function middleware(request: NextRequest) {
 
     // If the preferred language is English, no redirect needed
     if (preferredLanguage === 'en') {
-        return
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders
+            }
+        })
     }
 
     // For all other supported languages, redirect to the localized URL

@@ -12,14 +12,20 @@ export const languages = [
     { code: "pt", name: "Português", flag: "🇧🇷" },
 ]
 
+// Helper function to get language codes (can be imported by server components)
+export const getSupportedLanguageCodes = () => languages.map(lang => lang.code)
+
 export default function LanguageSelector() {
     const router = useRouter()
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
 
     // Determine current language from URL
-    const currentLanguageCode = pathname.split('/')[1] || 'en'
-    const currentLanguage = languages.find(lang => lang.code === currentLanguageCode) || languages[0]
+    const currentLanguageCode = pathname.split('/')[1]
+    const isValidLang = languages.some(lang => lang.code === currentLanguageCode)
+    const currentLanguage = isValidLang
+        ? languages.find(lang => lang.code === currentLanguageCode)
+        : languages[0]
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -48,8 +54,8 @@ export default function LanguageSelector() {
                     setIsOpen(!isOpen)
                 }}
             >
-                <span>{currentLanguage.flag}</span>
-                <span className="hidden sm:inline">{currentLanguage.name}</span>
+                <span>{currentLanguage?.flag || "🌐"}</span>
+                <span className="hidden sm:inline">{currentLanguage?.name || "English"}</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
