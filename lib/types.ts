@@ -1,4 +1,8 @@
 // lib/types.ts
+// Import or redefine TranslationKey from translations.ts
+import type { TranslationKey } from '@/lib/translations';
+export type { TranslationKey }; // Re-export it as a type for use in other components
+
 export interface Course {
   id: string
   title: string
@@ -17,17 +21,6 @@ export interface Language {
 }
 
 export type CourseType = 'beginner' | 'intermediate' | 'advanced'
-
-// Additional translation keys for course detail page
-export type CourseDetailTranslationKey =
-    | 'availableLanguages'
-    | 'downloadMaterials'
-    | 'startCourse'
-    | 'browseOtherCourses'
-    | 'courseDetails'
-    | 'language'
-    | 'level'
-    | 'lastUpdated'
 
 export interface ContentLanguage {
   id: number

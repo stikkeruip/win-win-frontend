@@ -9,8 +9,8 @@ const handleApiError = (error: any) => {
     return Promise.reject(error);
 };
 
-// Fetch all content with optional language filter
-export async function getContent(lang?: string, contentType?: string) {
+// Fetch content with optional language filter and content ID
+export async function getContent(lang?: string, contentType?: string, contentId?: string) {
     try {
         let url = `${API_BASE_URL}/content`;
 
@@ -18,6 +18,7 @@ export async function getContent(lang?: string, contentType?: string) {
         const params = new URLSearchParams();
         if (lang) params.append('lang', lang);
         if (contentType) params.append('type', contentType);
+        if (contentId) params.append('id', contentId); // Add content ID filter
 
         if (params.toString()) {
             url = `${url}?${params.toString()}`;
@@ -54,37 +55,40 @@ export async function getContent(lang?: string, contentType?: string) {
 // Get content details with translations
 export async function getContentWithTranslations(id: string | number) {
     try {
-        // Use the PUBLIC content endpoint with filtering
-        const response = await fetch(`${API_BASE_URL}/content?id=${id}`);
+        // First try to use the admin endpoint which returns translations
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/content/${id}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+        } catch (adminError) {
+            console.log('Admin endpoint not available, falling back to public endpoint');
         }
 
-        const data = await response.json();
+        // Fallback to the public endpoint which doesn't include translations
+        const allContent = await getContent(undefined, undefined, id.toString());
 
-        // Extract the content based on response format
-        let contentItem = null;
-
-        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
-            contentItem = data.data[0]; // First item in data array
-        } else if (data && Array.isArray(data) && data.length > 0) {
-            contentItem = data[0]; // First item if array is directly returned
-        } else {
+        if (!allContent || allContent.length === 0) {
             throw new Error('Content not found');
         }
 
         // Create a ContentWithTranslations object with just the original content
-        // since we don't have access to translations without admin privileges
         return {
-            original: contentItem,
-            translations: [] // Empty translations array
+            original: allContent[0],
+            translations: [] // Empty translations array since we don't have admin access
         };
     } catch (error) {
         console.error('Error in getContentWithTranslations:', error);
         return handleApiError(error);
     }
 }
+
 // Log download event
 export async function logDownload(id: string | number) {
     try {

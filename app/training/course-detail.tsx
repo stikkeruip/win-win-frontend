@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useLanguage } from '@/app/language-provider'
-import { getContentWithTranslations, logDownload } from '@/lib/api'
-import { ContentWithTranslations } from '@/lib/types'
+import { getContentWithTranslations, logDownload, getContent } from '@/lib/api'
+import { ContentWithTranslations, Content, TranslationKey } from '@/lib/types'
 
 export default function CourseDetail() {
     const { id } = useParams()
@@ -23,12 +23,42 @@ export default function CourseDetail() {
             setError(null)
 
             try {
-                const data = await getContentWithTranslations(id as string)
-                setCourse(data)
+                // First try to get the course in the current language
+                console.log(`Fetching course ${id} with language filter: ${currentLang}`)
+                const contentList = await getContent(currentLang, undefined, id as string)
 
-                // If we have the original content, set it as selected
-                if (data && data.original && data.original.language) {
-                    setSelectedTranslation(data.original.language.code)
+                if (contentList && contentList.length > 0) {
+                    // If we found content in the current language, use it
+                    const contentItem = contentList[0]
+                    console.log('Found course in current language:', contentItem)
+
+                    // Create a ContentWithTranslations object with just this content
+                    const contentWithTranslations: ContentWithTranslations = {
+                        original: contentItem,
+                        translations: []
+                    }
+
+                    setCourse(contentWithTranslations)
+                    setSelectedTranslation(contentItem.language.code)
+                } else {
+                    // If not found in current language, try to get it with translations
+                    console.log('Course not found in current language, fetching with translations')
+                    const data = await getContentWithTranslations(id as string)
+                    setCourse(data)
+
+                    // Try to find a translation matching the current UI language
+                    const matchingTranslation = data.translations.find(
+                        (t: Content) => t.language.code === currentLang
+                    )
+
+                    if (matchingTranslation) {
+                        // If we have a translation in the current language, use it as the active content
+                        console.log('Found matching translation for', currentLang)
+                        setSelectedTranslation(currentLang)
+                    } else {
+                        // Otherwise use the original content
+                        setSelectedTranslation(data.original.language.code)
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching course:', err)
@@ -43,10 +73,22 @@ export default function CourseDetail() {
         }
     }, [id, currentLang])
 
-    // Get the active content (will always be the original since we don't have translations)
+    // Get the active content based on the selected language
     const getActiveContent = () => {
         if (!course || !course.original) return null
-        return course.original
+
+        // If selected translation is the original language, return original
+        if (selectedTranslation === course.original.language.code) {
+            return course.original
+        }
+
+        // Otherwise find the matching translation
+        const translation = course.translations.find(
+            (t: Content) => t.language.code === selectedTranslation
+        )
+
+        // Return the translation if found, otherwise the original
+        return translation || course.original
     }
 
     const activeContent = getActiveContent()
@@ -92,6 +134,12 @@ export default function CourseDetail() {
         )
     }
 
+    // Combine original and translations for the language selector
+    const allLanguageVersions = [
+        course.original,
+        ...course.translations
+    ]
+
     return (
         <div className="bg-white">
             <div className="mx-auto max-w-6xl px-6 py-12">
@@ -104,33 +152,22 @@ export default function CourseDetail() {
                     <span className="text-gray-900">{activeContent.title}</span>
                 </nav>
 
-                {/* Language selector - only show if we have translations */}
-                {course.translations && course.translations.length > 0 && (
+                {/* Language selector - only show if we have multiple language versions */}
+                {allLanguageVersions.length > 1 && (
                     <div className="mb-8">
                         <div className="text-sm font-medium text-gray-500">{t('availableLanguages')}:</div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                            <button
-                                className={`rounded-full px-3 py-1 text-sm ${
-                                    selectedTranslation === course.original.language.code
-                                        ? 'bg-[#FFA94D] text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                                onClick={() => setSelectedTranslation(course.original.language.code)}
-                            >
-                                {course.original.language.name}
-                            </button>
-
-                            {course.translations.map(translation => (
+                            {allLanguageVersions.map(version => (
                                 <button
-                                    key={translation.language.code}
+                                    key={version.language.code}
                                     className={`rounded-full px-3 py-1 text-sm ${
-                                        selectedTranslation === translation.language.code
+                                        selectedTranslation === version.language.code
                                             ? 'bg-[#FFA94D] text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
-                                    onClick={() => setSelectedTranslation(translation.language.code)}
+                                    onClick={() => setSelectedTranslation(version.language.code)}
                                 >
-                                    {translation.language.name}
+                                    {version.language.name}
                                 </button>
                             ))}
                         </div>
