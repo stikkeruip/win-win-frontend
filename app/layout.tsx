@@ -1,7 +1,9 @@
+// app/layout.tsx
 import React from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { headers } from "next/headers"
+import LayoutWrapper from "./layout-wrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,7 +30,9 @@ export default function RootLayout({
     return (
         <html lang={currentLang} dir={direction}>
         <body className={inter.className}>
-        {children}
+        <LayoutWrapper>
+            {children}
+        </LayoutWrapper>
         </body>
         </html>
     )
