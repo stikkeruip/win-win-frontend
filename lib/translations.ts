@@ -1,4 +1,4 @@
-// lib/translations.ts (complete updated version)
+// lib/translations.ts
 // Update the TranslationKey type to include the new keys
 export type TranslationKey =
     | 'home'
@@ -486,4 +486,10 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         admin_loginError: 'خطأ في تسجيل الدخول',
         admin_loginDescription: 'تسجيل الدخول للوصول إلى نظام إدارة المحتوى',
     }
+};
+
+// Function to get translations for a specific language
+export function getTranslations(lang: string): Record<TranslationKey, string> {
+    // Return translations for the specified language, or fall back to English if not available
+    return translations[lang] || translations['en'];
 }
