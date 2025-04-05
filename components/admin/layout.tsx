@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import AdminSidebar from './sidebar'
 import { useLanguage } from '@/app/language-provider'
 import { AdminTranslationProvider } from './admin-translation-provider'
+import AdminSidebar from './sidebar' // We'll use the existing import path but replace the component
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
     const router = useRouter()
     const pathname = usePathname()
-    const { t, localizedPath } = useLanguage()
+    const { localizedPath } = useLanguage()
 
     useEffect(() => {
         // Check for authentication token

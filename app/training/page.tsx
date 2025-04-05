@@ -19,7 +19,7 @@ export default function Training() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              <span className="text-[#FFA94D]">{t('training')}</span> <span className="text-[#74C0FC]">{t('trainingCourses')}</span>
+              <span className="text-[#FFA94D]">{t('trainingCourses')}</span>
             </h1>
             <p className="mt-4 text-lg text-gray-600">
               {t('exploreOurCourses')}

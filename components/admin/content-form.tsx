@@ -12,13 +12,11 @@ import {
 } from '@/lib/admin-api'
 import {
     X,
-    Plus,
-    Upload,
     Save,
     ArrowLeft,
-    Trash2,
     Globe,
-    UploadCloud
+    UploadCloud,
+    Plus
 } from 'lucide-react'
 import { useAdminTranslation } from './admin-translation-provider'
 import AdminTranslationHandler from './admin-translation-handler'
@@ -62,6 +60,10 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
     const [error, setError] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({})
     const isEditMode = !!contentId
+    const [isTranslationDropdownOpen, setIsTranslationDropdownOpen] = useState(false)
+
+    // Track the currently active language tab
+    const [activeLanguageId, setActiveLanguageId] = useState<number | null>(null)
 
     // Load languages
     useEffect(() => {
@@ -79,12 +81,14 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                             ...prev,
                             language_id: englishLang.id
                         }))
+                        setActiveLanguageId(englishLang.id)
                     } else {
                         // Otherwise use the first language
                         setFormData(prev => ({
                             ...prev,
                             language_id: data[0].id
                         }))
+                        setActiveLanguageId(data[0].id)
                     }
                 }
             } catch (err: any) {
@@ -111,14 +115,17 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                     file_link: data.original.file_link,
                     language_id: data.original.language.id,
                     type: data.original.type || 'module',
-                    translations: data.translations.map(t => ({
+                    translations: data.translations ? data.translations.map(t => ({
                         id: t.id,
                         title: t.title,
                         description: t.description || '',
                         file_link: t.file_link,
                         language_id: t.language.id
-                    }))
+                    })) : []
                 })
+
+                // Set active language to the original content's language
+                setActiveLanguageId(data.original.language.id)
             } catch (err: any) {
                 console.error('Error fetching content:', err)
                 setError('Failed to load content. Please try again.')
@@ -130,29 +137,122 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
         fetchContent()
     }, [contentId, isEditMode])
 
-    // Handle form field changes for main content
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'language_id' ? parseInt(value, 10) : value
-        }))
+    // Get active content based on selected language tab
+    const getActiveContent = () => {
+        if (!activeLanguageId) return null
+
+        // If it's the original content
+        if (activeLanguageId === formData.language_id) {
+            return {
+                title: formData.title,
+                description: formData.description,
+                file_link: formData.file_link,
+                language_id: formData.language_id,
+                isOriginal: true,
+                index: -1
+            }
+        }
+
+        // If it's a translation
+        const translationIndex = formData.translations ? formData.translations.findIndex(t => t.language_id === activeLanguageId) : -1
+        if (translationIndex >= 0) {
+            return {
+                ...formData.translations[translationIndex],
+                isOriginal: false,
+                index: translationIndex
+            }
+        }
+
+        return null
     }
 
-    // Handle file selection for main content
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return
+    const activeContent = getActiveContent()
 
-        const file = e.target.files[0]
+    // Add a new translation for a specific language
+    const addTranslation = (languageId: number) => {
+        if ((formData.translations && formData.translations.some(t => t.language_id === languageId)) || formData.language_id === languageId) {
+            // Already exists
+            return
+        }
+
         setFormData(prev => ({
             ...prev,
-            file
+            translations: [
+                ...prev.translations,
+                {
+                    title: '',
+                    description: '',
+                    language_id: languageId
+                }
+            ]
         }))
 
-        // Upload the file immediately
-        await handleFileUpload(file, 'main')
+        // Switch to the new translation
+        setActiveLanguageId(languageId)
+    }
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (isTranslationDropdownOpen && !(event.target as Element).closest('.translation-dropdown-container')) {
+                setIsTranslationDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isTranslationDropdownOpen]);
+
+    // Handle title and description changes for active content
+    const handleActiveContentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target
+
+        if (activeContent?.isOriginal) {
+            // Update original content
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }))
+        } else if (activeContent && activeContent.index >= 0) {
+            // Update translation
+            setFormData(prev => ({
+                ...prev,
+                translations: prev.translations ? prev.translations.map((t, idx) =>
+                    idx === activeContent.index ? { ...t, [name]: value } : t
+                ) : []
+            }))
+        }
+    }
+
+    // Handle file selection for active content
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0 || !activeContent) return
+
+        const file = e.target.files[0]
+
+        if (activeContent.isOriginal) {
+            // Update original content file
+            setFormData(prev => ({
+                ...prev,
+                file
+            }))
+
+            // Upload the file immediately
+            await handleFileUpload(file, 'main')
+        } else if (activeContent.index >= 0) {
+            // Update translation file
+            setFormData(prev => ({
+                ...prev,
+                translations: prev.translations ? prev.translations.map((t, idx) =>
+                    idx === activeContent.index ? { ...t, file } : t
+                ) : []
+            }))
+
+            // Upload the file immediately
+            await handleFileUpload(file, activeContent.index)
+        }
     }
 
     // Handle file upload
@@ -172,11 +272,11 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                 // Update translation file_link
                 setFormData(prev => ({
                     ...prev,
-                    translations: prev.translations.map((t, idx) =>
+                    translations: prev.translations ? prev.translations.map((t, idx) =>
                         idx === id
                             ? { ...t, file_link: result.file_url }
                             : t
-                    )
+                    ) : []
                 }))
             }
         } catch (err: any) {
@@ -185,80 +285,6 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
         } finally {
             setIsUploading(prev => ({ ...prev, [id]: false }))
         }
-    }
-
-    // Add a new translation field
-    const addTranslation = () => {
-        // Get unused languages (languages that are not used in translations and main content)
-        const usedLanguageIds = [
-            formData.language_id,
-            ...formData.translations.map(t => t.language_id)
-        ]
-
-        const availableLanguages = languages.filter(
-            lang => !usedLanguageIds.includes(lang.id)
-        )
-
-        if (availableLanguages.length === 0) {
-            alert('All languages are already used')
-            return
-        }
-
-        setFormData(prev => ({
-            ...prev,
-            translations: [
-                ...prev.translations,
-                {
-                    title: '',
-                    description: '',
-                    language_id: availableLanguages[0].id
-                }
-            ]
-        }))
-    }
-
-    // Handle form field changes for translations
-    const handleTranslationChange = (
-        index: number,
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            translations: prev.translations.map((t, idx) =>
-                idx === index ? { 
-                    ...t, 
-                    [name]: name === 'language_id' ? parseInt(value, 10) : value 
-                } : t
-            )
-        }))
-    }
-
-    // Handle file selection for translations
-    const handleTranslationFileChange = async (
-        index: number,
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        if (!e.target.files || e.target.files.length === 0) return
-
-        const file = e.target.files[0]
-        setFormData(prev => ({
-            ...prev,
-            translations: prev.translations.map((t, idx) =>
-                idx === index ? { ...t, file } : t
-            )
-        }))
-
-        // Upload the file immediately
-        await handleFileUpload(file, index)
-    }
-
-    // Remove a translation
-    const removeTranslation = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            translations: prev.translations.filter((_, idx) => idx !== index)
-        }))
     }
 
     // Handle form submission
@@ -276,13 +302,13 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                 language_id: formData.language_id,
                 type: formData.type,
                 is_original: true,
-                translations: formData.translations.map(t => ({
+                translations: formData.translations ? formData.translations.map(t => ({
                     id: t.id,
                     title: t.title,
                     description: t.description,
                     file_link: t.file_link || '',
                     language_id: t.language_id
-                }))
+                })) : []
             }
 
             if (isEditMode && contentId) {
@@ -308,6 +334,35 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
     const getLanguageName = (id: number) => {
         const language = languages.find(lang => lang.id === id)
         return language ? language.name : 'Unknown'
+    }
+
+    // Get language flag emoji by ID
+    const getLanguageFlag = (id: number) => {
+        const language = languages.find(lang => lang.id === id)
+        if (!language) return '🌐'
+
+        const flagMap: Record<string, string> = {
+            'en': '🇺🇸',
+            'fr': '🇫🇷',
+            'ar': '🇦🇪',
+            'pt': '🇧🇷',
+        }
+
+        return flagMap[language.code] || '🌐'
+    }
+
+    // Clear file for active content
+    const clearActiveFile = () => {
+        if (activeContent?.isOriginal) {
+            setFormData(prev => ({ ...prev, file_link: '' }))
+        } else if (activeContent && activeContent.index >= 0) {
+            setFormData(prev => ({
+                ...prev,
+                translations: prev.translations ? prev.translations.map((t, idx) =>
+                    idx === activeContent.index ? { ...t, file_link: '' } : t
+                ) : []
+            }))
+        }
     }
 
     if (isLoading) {
@@ -354,398 +409,236 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
             )}
 
             <form onSubmit={handleSubmit}>
-                <div className="space-y-8 divide-y divide-gray-200">
-                    {/* Main Content Form */}
-                    <div className="space-y-6 rounded-lg bg-white p-6 shadow">
-                        <div>
-                            <h3 className="text-lg font-medium leading-6 text-gray-900">
-                                {t('mainContent')} ({getLanguageName(formData.language_id)})
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                                {t('originalContentDescription')}
-                            </p>
-                        </div>
+                <div className="rounded-lg bg-white p-6 shadow">
+                    {/* Language Tabs */}
+                    <div className="mb-6">
+                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                            {t('language')}:
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {/* Original language tab */}
+                            <button
+                                type="button"
+                                onClick={() => setActiveLanguageId(formData.language_id)}
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    ${activeLanguageId === formData.language_id
+                                    ? 'bg-[#FFA94D] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                <span>{getLanguageFlag(formData.language_id)}</span>
+                                <span>{getLanguageName(formData.language_id)}</span>
+                                <span className="ml-1 text-xs bg-white/20 rounded-full px-2 py-0.5">
+                                    {t('original')}
+                                </span>
+                            </button>
 
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-6">
-                            <div className="sm:col-span-4">
-                                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                                    {t('title')}
-                                </label>
-                                <div className="mt-1">
+                            {/* Translation tabs */}
+                            {formData.translations ? formData.translations.map((translation) => (
+                                <button
+                                    key={translation.language_id}
+                                    type="button"
+                                    onClick={() => setActiveLanguageId(translation.language_id)}
+                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                        ${activeLanguageId === translation.language_id
+                                        ? 'bg-[#74C0FC] text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                >
+                                    <span>{getLanguageFlag(translation.language_id)}</span>
+                                    <span>{getLanguageName(translation.language_id)}</span>
+                                </button>
+                            )) : null}
+
+                            {/* Add Translation Button */}
+                            <div className="relative translation-dropdown-container">
+                                <button
+                                    type="button"
+                                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                    onClick={() => setIsTranslationDropdownOpen(!isTranslationDropdownOpen)}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    <span>{t('addTranslation')}</span>
+                                </button>
+
+                                {/* Dropdown menu for available languages */}
+                                {isTranslationDropdownOpen && (
+                                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md border border-gray-100 overflow-hidden z-10">
+                                        <div className="py-1">
+                                            {languages
+                                                .filter(lang =>
+                                                    lang.id !== formData.language_id &&
+                                                    !(formData.translations && formData.translations.some(t => t.language_id === lang.id))
+                                                )
+                                                .map(lang => (
+                                                    <button
+                                                        key={lang.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            addTranslation(lang.id);
+                                                            setIsTranslationDropdownOpen(false);
+                                                        }}
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                    >
+                                                        <span className="mr-2">{getLanguageFlag(lang.id)}</span>
+                                                        <span>{lang.name}</span>
+                                                    </button>
+                                                ))}
+
+                                            {languages.filter(lang =>
+                                                lang.id !== formData.language_id &&
+                                                !(formData.translations && formData.translations.some(t => t.language_id === lang.id))
+                                            ).length === 0 && (
+                                                <div className="px-4 py-2 text-sm text-gray-500">
+                                                    {t('noAvailableLanguages')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Active Content Form */}
+                    {activeContent && (
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-1">
+                                    {activeContent.isOriginal
+                                        ? `${t('mainContent')} (${getLanguageName(activeContent.language_id)})`
+                                        : `${t('translation')} - ${getLanguageName(activeContent.language_id)}`
+                                    }
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                    {activeContent.isOriginal
+                                        ? t('originalContentDescription')
+                                        : t('translationDescription')
+                                    }
+                                </p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Title Field */}
+                                <div>
+                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                                        {t('title')}
+                                    </label>
                                     <input
                                         type="text"
                                         name="title"
                                         id="title"
                                         required
-                                        value={formData.title}
-                                        onChange={handleInputChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+                                        value={activeContent.isOriginal ? formData.title : activeContent.title}
+                                        onChange={handleActiveContentChange}
+                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#FFA94D] focus:ring-[#FFA94D] text-base px-4 py-3"
+                                        placeholder={`${t('title')}...`}
                                     />
                                 </div>
-                            </div>
 
-                            <div className="sm:col-span-3">
-                                <label htmlFor="language_id" className="block text-sm font-medium text-gray-700">
-                                    {t('language')}
-                                </label>
-                                <div className="mt-1">
-                                    <select
-                                        id="language_id"
-                                        name="language_id"
-                                        required
-                                        value={formData.language_id}
-                                        onChange={handleInputChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                                    >
-                                        <option value="">{t('admin_selectLanguage')}</option>
-                                        {languages.map(language => (
-                                            <option key={language.id} value={language.id}>
-                                                {language.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="sm:col-span-3">
-                                <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                                    {t('contentType')}
-                                </label>
-                                <div className="mt-1">
-                                    <select
-                                        id="type"
-                                        name="type"
-                                        required
-                                        value={formData.type}
-                                        onChange={handleInputChange}
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                                    >
-                                        <option value="module">Module</option>
-                                        <option value="resource">Resource</option>
-                                        <option value="document">Document</option>
-                                        <option value="video">Video</option>
-                                        <option value="beginner">{t('beginner')}</option>
-                                        <option value="intermediate">{t('intermediate')}</option>
-                                        <option value="advanced">{t('advanced')}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="sm:col-span-6">
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                                    {t('description')}
-                                </label>
-                                <div className="mt-1">
-                  <textarea
-                      id="description"
-                      name="description"
-                      rows={4}
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                  />
-                                </div>
-                            </div>
-
-                            <div className="sm:col-span-6">
-                                <label className="block text-sm font-medium text-gray-700">{t('file')}</label>
-                                <div className="mt-1 flex items-center">
-                                    {formData.file_link ? (
-                                        <div className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm">
-                                            <a
-                                                href={formData.file_link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:text-blue-800"
-                                            >
-                                                {formData.file_link.split('/').pop()}
-                                            </a>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, file_link: '' }))}
-                                                className="ml-2 text-red-600 hover:text-red-800"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="w-full">
-                                            <label
-                                                htmlFor="main-file-upload"
-                                                className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 py-4 ${
-                                                    isUploading['main'] ? 'bg-gray-50' : 'hover:bg-gray-50'
-                                                }`}
-                                            >
-                                                {isUploading['main'] ? (
-                                                    <div className="flex items-center">
-                                                        <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-orange-500 border-t-transparent"></div>
-                                                        <span className="text-sm text-gray-500">{t('uploading')}</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center">
-                                                        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                                                        <div className="mt-2 flex text-sm text-gray-600">
-                                                            <span>{t('uploadAFile')}</span>
-                                                            <input
-                                                                id="main-file-upload"
-                                                                name="file"
-                                                                type="file"
-                                                                className="sr-only"
-                                                                onChange={handleFileChange}
-                                                            />
-                                                        </div>
-                                                        <p className="text-xs text-gray-500">
-                                                            {t('supportedFileFormats')}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </label>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Translations Section */}
-                    <div className="pt-6">
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
+                                {/* Description Field */}
                                 <div>
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900">{t('translations')}</h3>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        {t('translationsDescription')}
-                                    </p>
+                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                                        {t('description')}
+                                    </label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        rows={6}
+                                        value={activeContent.isOriginal ? formData.description : activeContent.description}
+                                        onChange={handleActiveContentChange}
+                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#FFA94D] focus:ring-[#FFA94D] text-base px-4 py-3"
+                                        placeholder={`${t('description')}...`}
+                                    />
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={addTranslation}
-                                    className="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    {t('addTranslationButton')}
-                                </button>
-                            </div>
 
-                            {formData.translations.length === 0 ? (
-                                <div className="rounded-md bg-gray-50 p-6 text-center">
-                                    <Globe className="mx-auto h-12 w-12 text-gray-400" />
-                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noTranslations')}</h3>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        {t('noTranslationsDescription')}
-                                    </p>
-                                    <div className="mt-6">
-                                        <button
-                                            type="button"
-                                            onClick={addTranslation}
-                                            className="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
-                                        >
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            {t('addTranslationButton')}
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-8">
-                                    {formData.translations.map((translation, index) => (
-                                        <div
-                                            key={index}
-                                            className="relative rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-                                        >
-                                            <div className="absolute right-4 top-4">
+                                {/* File Upload Field */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('file')}</label>
+                                    <div className="mt-1">
+                                        {(activeContent.isOriginal ? formData.file_link : activeContent.file_link) ? (
+                                            <div className="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm">
+                                                <a
+                                                    href={activeContent.isOriginal ? formData.file_link : activeContent.file_link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 truncate flex-1"
+                                                >
+                                                    {(activeContent.isOriginal ? formData.file_link : activeContent.file_link)?.split('/').pop()}
+                                                </a>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeTranslation(index)}
-                                                    className="rounded-full bg-white p-1 text-gray-400 shadow-sm hover:bg-gray-100 hover:text-gray-500"
+                                                    onClick={clearActiveFile}
+                                                    className="ml-2 rounded-full p-1 text-red-600 hover:bg-red-50"
                                                 >
                                                     <X className="h-5 w-5" />
                                                 </button>
                                             </div>
-
-                                            <h4 className="text-lg font-medium text-gray-900">
-                                                {t('translationTitle')} ({getLanguageName(translation.language_id)})
-                                                {translation.id && <span className="ml-2 text-sm text-gray-500">(ID: {translation.id})</span>}
-                                            </h4>
-
-                                            <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-6">
-                                                <div className="sm:col-span-4">
-                                                    <label
-                                                        htmlFor={`translation-${index}-title`}
-                                                        className="block text-sm font-medium text-gray-700"
-                                                    >
-                                                        {t('admin_title')}
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <input
-                                                            type="text"
-                                                            name="title"
-                                                            id={`translation-${index}-title`}
-                                                            required
-                                                            value={translation.title}
-                                                            onChange={(e) => handleTranslationChange(index, e)}
-                                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="sm:col-span-3">
-                                                    <label
-                                                        htmlFor={`translation-${index}-language_id`}
-                                                        className="block text-sm font-medium text-gray-700"
-                                                    >
-                                                        {t('language')}
-                                                    </label>
-                                                    <div className="mt-1">
-                                                        <select
-                                                            id={`translation-${index}-language_id`}
-                                                            name="language_id"
-                                                            required
-                                                            value={translation.language_id}
-                                                            onChange={(e) => handleTranslationChange(index, e)}
-                                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                                                        >
-                                                            <option value="">{t('admin_selectLanguage')}</option>
-                                                            {languages
-                                                                .filter(lang =>
-                                                                    // Show current selection or unused languages
-                                                                    lang.id === translation.language_id ||
-                                                                    ![
-                                                                        formData.language_id,
-                                                                        ...formData.translations
-                                                                            .filter((_, i) => i !== index)
-                                                                            .map(t => t.language_id)
-                                                                    ].includes(lang.id)
-                                                                )
-                                                                .map(language => (
-                                                                    <option key={language.id} value={language.id}>
-                                                                        {language.name}
-                                                                    </option>
-                                                                ))
-                                                            }
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div className="sm:col-span-6">
-                                                    <label
-                                                        htmlFor={`translation-${index}-description`}
-                                                        className="block text-sm font-medium text-gray-700"
-                                                    >
-                                                        {t('admin_description')}
-                                                    </label>
-                                                    <div className="mt-1">
-                            <textarea
-                                id={`translation-${index}-description`}
-                                name="description"
-                                rows={4}
-                                value={translation.description}
-                                onChange={(e) => handleTranslationChange(index, e)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
-                            />
-                                                    </div>
-                                                </div>
-
-                                                <div className="sm:col-span-6">
-                                                    <label className="block text-sm font-medium text-gray-700">{t('admin_file')}</label>
-                                                    <div className="mt-1 flex items-center">
-                                                        {translation.file_link ? (
-                                                            <div className="flex w-full items-center justify-between rounded-md border border-gray-300 bg-white px-4 py-2 text-sm">
-                                                                <a
-                                                                    href={translation.file_link}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:text-blue-800"
-                                                                >
-                                                                    {translation.file_link.split('/').pop()}
-                                                                </a>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setFormData(prev => ({
-                                                                            ...prev,
-                                                                            translations: prev.translations.map((t, i) =>
-                                                                                i === index ? { ...t, file_link: '' } : t
-                                                                            )
-                                                                        }))
-                                                                    }}
-                                                                    className="ml-2 text-red-600 hover:text-red-800"
-                                                                >
-                                                                    <X className="h-4 w-4" />
-                                                                </button>
+                                        ) : (
+                                            <div className="w-full">
+                                                <label
+                                                    htmlFor={`file-upload-${activeContent.language_id}`}
+                                                    className={`flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 px-6 py-8 ${
+                                                        isUploading[activeContent.isOriginal ? 'main' : activeContent.index]
+                                                            ? 'bg-gray-50'
+                                                            : 'hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {isUploading[activeContent.isOriginal ? 'main' : activeContent.index] ? (
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="mb-3 h-6 w-6 animate-spin rounded-full border-2 border-[#FFA94D] border-t-transparent"></div>
+                                                            <span className="text-base text-gray-500">{t('uploading')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center">
+                                                            <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+                                                            <div className="mt-3 flex flex-col">
+                                                                <span className="text-base font-medium text-[#FFA94D]">{t('uploadAFile')}</span>
+                                                                <span className="mt-1 text-sm text-gray-500">{t('supportedFileFormats')}</span>
+                                                                <input
+                                                                    id={`file-upload-${activeContent.language_id}`}
+                                                                    name="file"
+                                                                    type="file"
+                                                                    className="sr-only"
+                                                                    onChange={handleFileChange}
+                                                                />
                                                             </div>
-                                                        ) : (
-                                                            <div className="w-full">
-                                                                <label
-                                                                    htmlFor={`translation-${index}-file-upload`}
-                                                                    className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 py-4 ${
-                                                                        isUploading[index] ? 'bg-gray-50' : 'hover:bg-gray-50'
-                                                                    }`}
-                                                                >
-                                                                    {isUploading[index] ? (
-                                                                        <div className="flex items-center">
-                                                                            <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                                                                            <span className="text-sm text-gray-500">{t('admin_uploading')}</span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="text-center">
-                                                                            <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                                                                            <div className="mt-2 flex text-sm text-gray-600">
-                                                                                <span>{t('admin_uploadAFile')}</span>
-                                                                                <input
-                                                                                    id={`translation-${index}-file-upload`}
-                                                                                    name="file"
-                                                                                    type="file"
-                                                                                    className="sr-only"
-                                                                                    onChange={(e) => handleTranslationFileChange(index, e)}
-                                                                                />
-                                                                            </div>
-                                                                            <p className="text-xs text-gray-500">
-                                                                                {t('admin_supportedFileFormats')}
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
-                                                                </label>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                                        </div>
+                                                    )}
+                                                </label>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )}
+                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
-                    </div>
+                    )}
+                </div>
 
-                    {/* Form Actions */}
-                    <div className="pt-6">
-                        <div className="flex justify-end space-x-3">
-                            <button
-                                type="button"
-                                onClick={() => router.push('/admin/content')}
-                                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                            >
-                                {t('cancel')}
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSaving}
-                                className="inline-flex items-center rounded-md border border-transparent bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-[#FF8A3D] hover:to-[#FF7A2D] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        {t('saving')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        {isEditMode ? t('updateContent') : t('createContent')}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
+                {/* Form Actions */}
+                <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        onClick={() => router.push('/admin/content')}
+                        className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                    >
+                        {t('cancel')}
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="inline-flex items-center rounded-lg border border-transparent bg-gradient-to-r from-[#FFA94D] to-[#FF8A3D] px-5 py-3 text-base font-medium text-white shadow-sm hover:from-[#FF8A3D] hover:to-[#FF7A2D] focus:outline-none focus:ring-2 focus:ring-[#FFA94D] focus:ring-offset-2 disabled:opacity-50"
+                    >
+                        {isSaving ? (
+                            <>
+                                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                {t('saving')}
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-5 w-5" />
+                                {isEditMode ? t('updateContent') : t('createContent')}
+                            </>
+                        )}
+                    </button>
                 </div>
             </form>
         </div>

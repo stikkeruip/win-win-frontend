@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FileText, Upload, Languages, Clock } from 'lucide-react'
+import { FileText, Upload, Clock } from 'lucide-react'
 import { makeAuthenticatedRequest } from '@/lib/admin-api'
 import { useLanguage } from '@/app/language-provider'
 
 interface StatsSummary {
     totalContent: number
-    totalLanguages: number
     totalVisits: number
     recentContent: {
         id: number
@@ -31,17 +30,12 @@ export default function AdminDashboard() {
                 const contentResponse = await makeAuthenticatedRequest('/api/admin/content')
                 const content = contentResponse.data || []
 
-                // Get languages
-                const languagesResponse = await makeAuthenticatedRequest('/api/languages')
-                const languages = languagesResponse.data || []
-
                 // Get visit stats
                 const visitsResponse = await makeAuthenticatedRequest('/api/admin/stats/visits')
 
                 // Build stats summary
                 const summary: StatsSummary = {
                     totalContent: content.length,
-                    totalLanguages: languages.length,
                     totalVisits: visitsResponse.total_visits || 0,
                     recentContent: content
                         .slice(0, 5)
@@ -86,7 +80,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold text-gray-900">{t('admin_dashboard')}</h1>
 
             {/* Stats Cards */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2">
                 <div className="rounded-lg bg-white p-6 shadow">
                     <div className="flex items-center">
                         <div className="rounded-full bg-orange-100 p-3">
@@ -95,18 +89,6 @@ export default function AdminDashboard() {
                         <div className="ml-4">
                             <h3 className="text-lg font-medium text-gray-900">{t('admin_totalContent')}</h3>
                             <p className="text-3xl font-bold text-gray-900">{stats?.totalContent || 0}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="rounded-lg bg-white p-6 shadow">
-                    <div className="flex items-center">
-                        <div className="rounded-full bg-blue-100 p-3">
-                            <Languages className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">{t('admin_totalLanguages')}</h3>
-                            <p className="text-3xl font-bold text-gray-900">{stats?.totalLanguages || 0}</p>
                         </div>
                     </div>
                 </div>

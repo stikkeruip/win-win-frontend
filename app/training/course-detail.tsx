@@ -47,9 +47,9 @@ export default function CourseDetail() {
                     setCourse(data)
 
                     // Try to find a translation matching the current UI language
-                    const matchingTranslation = data.translations.find(
+                    const matchingTranslation = data.translations ? data.translations.find(
                         (t: Content) => t.language.code === currentLang
-                    )
+                    ) : null
 
                     if (matchingTranslation) {
                         // If we have a translation in the current language, use it as the active content
@@ -83,9 +83,9 @@ export default function CourseDetail() {
         }
 
         // Otherwise find the matching translation
-        const translation = course.translations.find(
+        const translation = course.translations ? course.translations.find(
             (t: Content) => t.language.code === selectedTranslation
-        )
+        ) : null
 
         // Return the translation if found, otherwise the original
         return translation || course.original
@@ -137,7 +137,7 @@ export default function CourseDetail() {
     // Combine original and translations for the language selector
     const allLanguageVersions = [
         course.original,
-        ...course.translations
+        ...(course.translations || [])
     ]
 
     return (

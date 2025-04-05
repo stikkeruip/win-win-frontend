@@ -8,7 +8,6 @@ import {
     FileText,
     Upload,
     BarChart,
-    Languages,
     LogOut,
     Menu,
     X
@@ -49,11 +48,6 @@ export default function AdminSidebar() {
             name: t('admin_stats'),
             href: localizedPath('/admin/stats'),
             icon: <BarChart className="h-5 w-5" />,
-        },
-        {
-            name: t('admin_languages'),
-            href: localizedPath('/admin/languages'),
-            icon: <Languages className="h-5 w-5" />,
         },
     ]
 
