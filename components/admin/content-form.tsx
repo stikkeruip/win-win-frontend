@@ -288,49 +288,78 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
     }
 
     // Handle form submission
+// Fix for the specific line in handleSubmit function
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsSaving(true)
-        setError(null)
+        e.preventDefault();
+        setIsSaving(true);
+        setError(null);
 
         try {
             // Prepare data for API
-            const payload = {
+            const payload: any = {
                 title: formData.title,
                 description: formData.description,
                 file_link: formData.file_link || '',
                 language_id: formData.language_id,
                 type: formData.type,
                 is_original: true,
-                translations: formData.translations ? formData.translations.map(t => ({
-                    id: t.id,
-                    title: t.title,
-                    description: t.description,
-                    file_link: t.file_link || '',
-                    language_id: t.language_id
-                })) : []
-            }
+                translations: formData.translations
+                    ? formData.translations.map(t => ({
+                        id: t.id,
+                        title: t.title,
+                        description: t.description,
+                        file_link: t.file_link || '',
+                        language_id: t.language_id
+                    }))
+                    : [],
+                removed_translation_ids: [] as number[] // Initialize with correct type
+            };
 
             if (isEditMode && contentId) {
-                // Update existing content
-                await updateContent(contentId, payload)
+                // If editing, we need to check for removed translations
+                try {
+                    // Get current state of the content from the backend
+                    const currentContent = await getContentWithTranslations(contentId);
+
+                    // Find translations that were in the database but are no longer in our form
+                    const existingTranslationIds = currentContent.translations
+                        ? currentContent.translations.map(t => t.id)
+                        : [];
+
+                    const currentTranslationIds = formData.translations
+                        ? formData.translations.filter(t => t.id).map(t => t.id)
+                        : [];
+
+                    // Find IDs that were in the original data but not in our current form
+                    const removedTranslationIds = existingTranslationIds.filter(
+                        id => !currentTranslationIds.includes(id)
+                    );
+
+                    // Add to payload - this line should now work
+                    payload.removed_translation_ids = removedTranslationIds;
+
+                    // Update existing content
+                    await updateContent(contentId, payload);
+                } catch (err) {
+                    console.error('Error checking translations:', err);
+                    // If we can't get the current state, just try to update with what we have
+                    await updateContent(contentId, payload);
+                }
             } else {
                 // Create new content
-                await createContent(payload)
+                await createContent(payload);
             }
 
             // Redirect to content list
-            router.push('/admin/content')
+            router.push('/admin/content');
         } catch (err: any) {
-            console.error('Error saving content:', err)
-            setError(err.message || 'Failed to save content. Please try again.')
-            window.scrollTo(0, 0)
+            console.error('Error saving content:', err);
+            setError(err.message || 'Failed to save content. Please try again.');
+            window.scrollTo(0, 0);
         } finally {
-            setIsSaving(false)
+            setIsSaving(false);
         }
-    }
-
-    // Get language name by ID
+    };    // Get language name by ID
     const getLanguageName = (id: number) => {
         const language = languages.find(lang => lang.id === id)
         return language ? language.name : 'Unknown'

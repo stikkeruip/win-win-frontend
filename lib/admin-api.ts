@@ -74,10 +74,14 @@ export async function createContent(data: any) {
 
 // Update content
 export async function updateContent(id: number, data: any) {
+    if (!data.removed_translation_ids) {
+        data.removed_translation_ids = [];
+    }
+
     return await makeAuthenticatedRequest(`/api/admin/content/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
-    })
+    });
 }
 
 // Delete content
