@@ -434,18 +434,41 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
 
                             {/* Translation tabs */}
                             {formData.translations ? formData.translations.map((translation) => (
-                                <button
-                                    key={translation.language_id}
-                                    type="button"
-                                    onClick={() => setActiveLanguageId(translation.language_id)}
-                                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                                        ${activeLanguageId === translation.language_id
-                                        ? 'bg-[#74C0FC] text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                                >
-                                    <span>{getLanguageFlag(translation.language_id)}</span>
-                                    <span>{getLanguageName(translation.language_id)}</span>
-                                </button>
+                                <div key={translation.language_id} className="relative group">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveLanguageId(translation.language_id)}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                            ${activeLanguageId === translation.language_id
+                                            ? 'bg-[#74C0FC] text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                    >
+                                        <span>{getLanguageFlag(translation.language_id)}</span>
+                                        <span>{getLanguageName(translation.language_id)}</span>
+                                        <button
+                                            type="button"
+                                            className="opacity-0 group-hover:opacity-100 ml-1 hover:bg-red-100 rounded-full p-1 transition-opacity"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Open confirmation dialog for removing translation
+                                                if (confirm(`${t('confirmRemoveTranslation')} ${getLanguageName(translation.language_id)}?`)) {
+                                                    // Remove translation
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        translations: prev.translations.filter(t => t.language_id !== translation.language_id)
+                                                    }));
+                                                    // Switch to original language if removing active translation
+                                                    if (activeLanguageId === translation.language_id) {
+                                                        setActiveLanguageId(formData.language_id);
+                                                    }
+                                                }
+                                            }}
+                                            title={t('removeTranslation')}
+                                        >
+                                            <X className="h-3 w-3 text-red-500" />
+                                        </button>
+                                    </button>
+                                </div>
                             )) : null}
 
                             {/* Add Translation Button */}

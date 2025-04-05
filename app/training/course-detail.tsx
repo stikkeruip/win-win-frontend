@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useLanguage } from '@/app/language-provider'
 import { getContentWithTranslations, logDownload, getContent } from '@/lib/api'
-import { ContentWithTranslations, Content, TranslationKey } from '@/lib/types'
+import { ContentWithTranslations, Content } from '@/lib/types'
+import FilePreview from '@/components/file-preview'
 
 export default function CourseDetail() {
     const { id } = useParams()
@@ -225,69 +225,17 @@ export default function CourseDetail() {
                     </div>
 
                     <div>
-                        <div className="relative aspect-video overflow-hidden rounded-lg">
-                            {activeContent.file_link && activeContent.file_link !== 'no-file' ? (
-                                (() => {
-                                    // Helper function to ensure file URLs are correctly formed
-                                    const getFullUrl = (url: string) => {
-                                        if (!url) return undefined;
-                                        if (url === 'no-file') return undefined;
-
-                                        // Check if the URL is already absolute
-                                        if (url.startsWith('http')) return url;
-
-                                        // Add leading slash if needed
-                                        if (!url.startsWith('/')) url = '/' + url;
-
-                                        // Prefix with API base URL
-                                        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-                                        return API_BASE_URL + url;
-                                    };
-
-                                    const fileUrl = getFullUrl(activeContent.file_link);
-
-                                    // Check if the file is an image by extension
-                                    if (fileUrl && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileUrl)) {
-                                        // If it's an image, display it using the Image component
-                                        return (
-                                            <Image
-                                                src={fileUrl}
-                                                alt={activeContent.title}
-                                                fill
-                                                className="object-cover"
-                                                priority
-                                            />
-                                        );
-                                    } else {
-                                        // If it's not an image, display a document icon with download button
-                                        return (
-                                            <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
-                                                <div className="w-20 h-20 mb-4 text-gray-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                </div>
-                                                <p className="text-center text-gray-600 mb-2">{t('fileAvailable')}</p>
-                                                <button 
-                                                    onClick={handleDownload}
-                                                    className="mt-2 px-4 py-2 bg-[#FFA94D] text-white rounded-md hover:bg-[#FF8A3D]"
-                                                >
-                                                    {t('downloadMaterials')}
-                                                </button>
-                                            </div>
-                                        );
-                                    }
-                                })()
-                            ) : (
-                                // If no file, show placeholder
-                                <Image
-                                    src="/placeholder.svg?height=400&width=600"
-                                    alt={activeContent.title}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
-                            )}
+                        {/* Enhanced File Preview */}
+                        <div className="overflow-hidden rounded-lg shadow-md">
+                            <FilePreview
+                                fileUrl={activeContent.file_link}
+                                title={activeContent.title}
+                                onDownload={handleDownload}
+                                aspectRatio="video"
+                                maxHeight={400}
+                                showDownloadButton={true}
+                                className="border border-gray-200"
+                            />
                         </div>
 
                         <div className="mt-6 rounded-lg bg-gray-50 p-6">
@@ -298,6 +246,13 @@ export default function CourseDetail() {
                                     <span className="text-gray-600">{t('language')}:</span>
                                     <span className="font-medium">{activeContent.language.name}</span>
                                 </div>
+
+                                {activeContent.type && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">{t('level')}:</span>
+                                        <span className="font-medium">{activeContent.type}</span>
+                                    </div>
+                                )}
 
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">{t('lastUpdated')}:</span>

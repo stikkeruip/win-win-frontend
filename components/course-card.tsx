@@ -1,8 +1,8 @@
 'use client'
 
-import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/app/language-provider"
+import FilePreview from "./file-preview"
 
 // Define a simpler Course interface that matches what we actually have
 interface Course {
@@ -42,9 +42,8 @@ export default function CourseCard({ course }: CourseCardProps) {
     return API_BASE_URL + url;
   }
 
-  // Get full URLs for file_link and image
-  const fileLink = getFullUrl(course.file_link);
-  const imageUrl = getFullUrl(course.image);
+  // Get file URL to display (prioritize file_link over image)
+  const fileToDisplay = course.file_link || course.image;
 
   // Safely access properties with fallbacks
   const {
@@ -59,40 +58,13 @@ export default function CourseCard({ course }: CourseCardProps) {
   return (
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
         <div className="relative h-48 w-full overflow-hidden">
-          {/* Check if the file is an image by extension */}
-          {fileLink && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileLink) ? (
-            <Image
-              src={fileLink}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          ) : imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          ) : fileLink ? (
-            <div className="flex h-full w-full items-center justify-center bg-gray-100">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 mb-2 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <span className="text-xs text-gray-500">{t('fileAvailable') || 'File Available'}</span>
-              </div>
-            </div>
-          ) : (
-            <Image
-              src="/placeholder.svg"
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          )}
+          <FilePreview
+              fileUrl={fileToDisplay}
+              title={title}
+              aspectRatio="video"
+              showDownloadButton={false}
+          />
+
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
             <div className="flex flex-wrap gap-1">
               {languages.slice(0, 3).map((lang, index) => (
