@@ -560,12 +560,6 @@ export default function AdminContentForm({ contentId }: ContentFormProps) {
                                         : `${t('translation')} - ${getLanguageName(activeContent.language_id)}`
                                     }
                                 </h3>
-                                <p className="text-sm text-gray-500">
-                                    {activeContent.isOriginal
-                                        ? t('originalContentDescription')
-                                        : t('translationDescription')
-                                    }
-                                </p>
                             </div>
 
                             <div className="space-y-6">

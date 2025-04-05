@@ -191,11 +191,6 @@ export default function CourseDetail() {
                         <h1 className="mb-4 text-3xl font-bold">{activeContent.title}</h1>
 
                         <div className="mb-6 flex flex-wrap gap-3">
-                            {activeContent.type && (
-                                <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800">
-                                    {activeContent.type}
-                                </span>
-                            )}
                             <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
                                 {activeContent.language.name}
                             </span>
@@ -246,13 +241,6 @@ export default function CourseDetail() {
                                     <span className="text-gray-600">{t('language')}:</span>
                                     <span className="font-medium">{activeContent.language.name}</span>
                                 </div>
-
-                                {activeContent.type && (
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">{t('level')}:</span>
-                                        <span className="font-medium">{activeContent.type}</span>
-                                    </div>
-                                )}
 
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">{t('lastUpdated')}:</span>
