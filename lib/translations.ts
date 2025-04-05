@@ -42,6 +42,7 @@ export type TranslationKey =
     | 'language'
     | 'level'
     | 'lastUpdated'
+    | 'fileAvailable'
     // Admin section translations
     | 'admin_dashboard'
     | 'admin_content'
@@ -168,6 +169,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         language: 'Language',
         level: 'Level',
         lastUpdated: 'Last Updated',
+        fileAvailable: 'File Available for Download',
 
         // Admin translations
         admin_dashboard: 'Dashboard',
@@ -293,6 +295,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         language: 'Langue',
         level: 'Niveau',
         lastUpdated: 'Dernière Mise à Jour',
+        fileAvailable: 'Fichier Disponible au Téléchargement',
 
         // Admin translations
         admin_dashboard: 'Tableau de Bord',
@@ -418,6 +421,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         language: 'Idioma',
         level: 'Nível',
         lastUpdated: 'Última Atualização',
+        fileAvailable: 'Arquivo Disponível para Download',
 
         // Admin translations
         admin_dashboard: 'Painel de Controle',
@@ -543,6 +547,7 @@ const translations: Record<string, Record<TranslationKey, string>> = {
         language: 'اللغة',
         level: 'المستوى',
         lastUpdated: 'آخر تحديث',
+        fileAvailable: 'الملف متاح للتنزيل',
 
         // Admin translations
         admin_dashboard: 'لوحة التحكم',

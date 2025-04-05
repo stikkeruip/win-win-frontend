@@ -10,9 +10,8 @@ interface Course {
   title: string
   description: string
   image?: string
+  file_link?: string
   languages: string[]
-  level: string
-  duration: string
 }
 
 interface CourseCardProps {
@@ -27,43 +26,73 @@ export default function CourseCard({ course }: CourseCardProps) {
     return null;
   }
 
+  // Helper function to ensure file URLs are correctly formed
+  const getFullUrl = (url: string | undefined) => {
+    if (!url) return undefined;
+    if (url === 'no-file') return undefined;
+
+    // Check if the URL is already absolute
+    if (url.startsWith('http')) return url;
+
+    // Add leading slash if needed
+    if (!url.startsWith('/')) url = '/' + url;
+
+    // Prefix with API base URL
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    return API_BASE_URL + url;
+  }
+
+  // Get full URLs for file_link and image
+  const fileLink = getFullUrl(course.file_link);
+  const imageUrl = getFullUrl(course.image);
+
   // Safely access properties with fallbacks
   const {
     id = 'unknown',
     title = 'Untitled Course',
     description = 'No description available',
-    level = 'beginner',
-    duration = '4 weeks',
   } = course;
 
   // Ensure we have languages array, even if empty
   const languages = Array.isArray(course.languages) ? course.languages : ['English'];
 
-  // Map level to translation key
-  let levelKey = 'beginner';
-  if (level && typeof level === 'string') {
-    const lowerLevel = level.toLowerCase();
-    if (lowerLevel.includes('inter')) levelKey = 'intermediate';
-    else if (lowerLevel.includes('advan')) levelKey = 'advanced';
-  }
-
-  // Get translated text
-  const translatedLevel = t(levelKey as any);
-
-  // Format duration with translation
-  const durationParts = duration?.split(' ') || ['4'];
-  const weeks = durationParts[0] || '4';
-  const translatedDuration = `${weeks} ${t('weeks')}`
-
   return (
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
         <div className="relative h-48 w-full overflow-hidden">
-          <Image
-              src={course.image || "/placeholder.svg"}
+          {/* Check if the file is an image by extension */}
+          {fileLink && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileLink) ? (
+            <Image
+              src={fileLink}
               alt={title}
               fill
               className="object-cover"
-          />
+            />
+          ) : imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover"
+            />
+          ) : fileLink ? (
+            <div className="flex h-full w-full items-center justify-center bg-gray-100">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 mb-2 text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <span className="text-xs text-gray-500">{t('fileAvailable') || 'File Available'}</span>
+              </div>
+            </div>
+          ) : (
+            <Image
+              src="/placeholder.svg"
+              alt={title}
+              fill
+              className="object-cover"
+            />
+          )}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
             <div className="flex flex-wrap gap-1">
               {languages.slice(0, 3).map((lang, index) => (
@@ -87,9 +116,7 @@ export default function CourseCard({ course }: CourseCardProps) {
           <p className="mb-4 line-clamp-2 text-gray-600">{description}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="text-sm text-gray-500">{translatedLevel}</div>
               <div className="mx-2 h-1 w-1 rounded-full bg-gray-300"></div>
-              <div className="text-sm text-gray-500">{translatedDuration}</div>
             </div>
             <Link
                 href={localizedPath(`/training/${id}`)}

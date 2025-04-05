@@ -102,7 +102,18 @@ export default function CourseDetail() {
 
             // If there's a file link, open it
             if (activeContent.file_link && activeContent.file_link !== 'no-file') {
-                window.open(activeContent.file_link, '_blank')
+                // Check if the file_link is a relative path and prefix it with API_BASE_URL if needed
+                let fileUrl = activeContent.file_link;
+                if (!fileUrl.startsWith('http') && !fileUrl.startsWith('/')) {
+                    // It's a relative path without leading slash, add a slash
+                    fileUrl = '/' + fileUrl;
+                }
+                if (!fileUrl.startsWith('http')) {
+                    // It's a relative path, prefix with API_BASE_URL
+                    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+                    fileUrl = API_BASE_URL + fileUrl;
+                }
+                window.open(fileUrl, '_blank')
             }
         } catch (err) {
             console.error('Error logging download:', err)
@@ -215,15 +226,68 @@ export default function CourseDetail() {
 
                     <div>
                         <div className="relative aspect-video overflow-hidden rounded-lg">
-                            <Image
-                                src={activeContent.file_link && activeContent.file_link !== 'no-file'
-                                    ? activeContent.file_link
-                                    : "/placeholder.svg?height=400&width=600"}
-                                alt={activeContent.title}
-                                fill
-                                className="object-cover"
-                                priority
-                            />
+                            {activeContent.file_link && activeContent.file_link !== 'no-file' ? (
+                                (() => {
+                                    // Helper function to ensure file URLs are correctly formed
+                                    const getFullUrl = (url: string) => {
+                                        if (!url) return undefined;
+                                        if (url === 'no-file') return undefined;
+
+                                        // Check if the URL is already absolute
+                                        if (url.startsWith('http')) return url;
+
+                                        // Add leading slash if needed
+                                        if (!url.startsWith('/')) url = '/' + url;
+
+                                        // Prefix with API base URL
+                                        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+                                        return API_BASE_URL + url;
+                                    };
+
+                                    const fileUrl = getFullUrl(activeContent.file_link);
+
+                                    // Check if the file is an image by extension
+                                    if (fileUrl && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileUrl)) {
+                                        // If it's an image, display it using the Image component
+                                        return (
+                                            <Image
+                                                src={fileUrl}
+                                                alt={activeContent.title}
+                                                fill
+                                                className="object-cover"
+                                                priority
+                                            />
+                                        );
+                                    } else {
+                                        // If it's not an image, display a document icon with download button
+                                        return (
+                                            <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
+                                                <div className="w-20 h-20 mb-4 text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-center text-gray-600 mb-2">{t('fileAvailable')}</p>
+                                                <button 
+                                                    onClick={handleDownload}
+                                                    className="mt-2 px-4 py-2 bg-[#FFA94D] text-white rounded-md hover:bg-[#FF8A3D]"
+                                                >
+                                                    {t('downloadMaterials')}
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+                                })()
+                            ) : (
+                                // If no file, show placeholder
+                                <Image
+                                    src="/placeholder.svg?height=400&width=600"
+                                    alt={activeContent.title}
+                                    fill
+                                    className="object-cover"
+                                    priority
+                                />
+                            )}
                         </div>
 
                         <div className="mt-6 rounded-lg bg-gray-50 p-6">
@@ -233,11 +297,6 @@ export default function CourseDetail() {
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">{t('language')}:</span>
                                     <span className="font-medium">{activeContent.language.name}</span>
-                                </div>
-
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">{t('level')}:</span>
-                                    <span className="font-medium">{activeContent.type || t('beginner')}</span>
                                 </div>
 
                                 <div className="flex justify-between">
