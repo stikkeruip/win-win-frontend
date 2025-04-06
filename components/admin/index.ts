@@ -7,7 +7,6 @@ export { default as AdminContentList } from './content-list'
 export { default as AdminContentForm } from './content-form'
 export { default as AdminFileUpload } from './file-upload'
 export { default as AdminStats } from './stats'
-export { default as AdminLanguages } from './languages'
 
 // Export translation provider
 export {
