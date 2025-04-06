@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { FileText, FileImage, FileVideo, FilePdf, File, Play, Download } from 'lucide-react'
+import { FileText, FileImage, FileVideo, FilePdf, File, Play, Download, Pause } from 'lucide-react'
 
 interface FilePreviewProps {
     fileUrl: string | undefined
@@ -26,6 +26,8 @@ export default function FilePreview({
     const [fileType, setFileType] = useState<'image' | 'video' | 'pdf' | 'document' | 'unknown'>('unknown')
     const [fullUrl, setFullUrl] = useState<string | undefined>(undefined)
     const [isError, setIsError] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
 
     // Determine aspect ratio class
     const getAspectRatioClass = () => {
@@ -81,7 +83,9 @@ export default function FilePreview({
         }
 
         try {
-            const extension = fullUrl.split('.').pop()?.toLowerCase() || ''
+            // Extract the file path without query parameters
+            const urlWithoutParams = fullUrl.split('?')[0]
+            const extension = urlWithoutParams.split('.').pop()?.toLowerCase() || ''
 
             if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
                 setFileType('image')
@@ -105,6 +109,43 @@ export default function FilePreview({
         console.error('Error loading image:', fullUrl)
         setIsError(true)
     }
+
+    // Toggle video play/pause
+    const toggleVideoPlayback = () => {
+        if (!videoRef.current) return
+
+        if (videoRef.current.paused || videoRef.current.ended) {
+            videoRef.current.play()
+                .then(() => setIsPlaying(true))
+                .catch(error => {
+                    console.error('Error playing video:', error)
+                    setIsPlaying(false)
+                })
+        } else {
+            videoRef.current.pause()
+            setIsPlaying(false)
+        }
+    }
+
+    // Update isPlaying state when video plays or pauses naturally
+    useEffect(() => {
+        const videoElement = videoRef.current
+        if (!videoElement) return
+
+        const handlePlay = () => setIsPlaying(true)
+        const handlePause = () => setIsPlaying(false)
+        const handleEnded = () => setIsPlaying(false)
+
+        videoElement.addEventListener('play', handlePlay)
+        videoElement.addEventListener('pause', handlePause)
+        videoElement.addEventListener('ended', handleEnded)
+
+        return () => {
+            videoElement.removeEventListener('play', handlePlay)
+            videoElement.removeEventListener('pause', handlePause)
+            videoElement.removeEventListener('ended', handleEnded)
+        }
+    }, [])
 
     const renderFilePreview = () => {
         if (!fullUrl || isError) {
@@ -151,25 +192,33 @@ export default function FilePreview({
 
             case 'video':
                 return (
-                    <div className="relative h-full w-full">
-                        <div className="flex h-full w-full items-center justify-center bg-gray-900">
-                            <div className="group relative">
-                                <video
-                                    src={fullUrl}
-                                    controls
-                                    preload="metadata"
-                                    className="max-h-full w-full"
-                                    style={{ maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                                    <Play className="h-12 w-12 text-white" />
+                    <div className="relative h-full w-full bg-black">
+                        <video
+                            ref={videoRef}
+                            src={fullUrl}
+                            className="h-full w-full"
+                            preload="metadata"
+                            controls
+                            style={{ maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+
+                        {/* Custom play button overlay */}
+                        <div
+                            className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                            onClick={toggleVideoPlayback}
+                        >
+                            {!isPlaying && (
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black/40 text-white transition-transform hover:bg-black/60 hover:scale-110">
+                                    <Play className="h-8 w-8" />
                                 </div>
-                            </div>
+                            )}
                         </div>
+
                         {showDownloadButton && onDownload && (
                             <button
                                 onClick={onDownload}
-                                className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-gray-800/70 px-3 py-1.5 text-xs text-white hover:bg-gray-800/90"
+                                className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded bg-gray-800/70 px-3 py-1.5 text-xs text-white hover:bg-gray-800/90"
                             >
                                 <Download className="h-4 w-4" />
                                 <span>Download</span>
