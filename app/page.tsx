@@ -71,8 +71,8 @@ export default function Home() {
 
                 <div className="flex justify-center">
                   <Image
-                      src="/placeholder.svg?height=400&width=400"
-                      alt="Students learning together"
+                      src="/partners.png?height=400&width=400"
+                      alt="Partner logos"
                       width={400}
                       height={400}
                       className="rounded-lg"

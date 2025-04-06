@@ -1,0 +1,16 @@
+services:
+  # NextJS Frontend
+  - type: web
+    name: win-win-frontend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://win-win-api.onrender.com # You'll need to update this after deploying the backend
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
+    branch: main
+    pullRequestPreviewsEnabled: true
