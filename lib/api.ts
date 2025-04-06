@@ -12,7 +12,7 @@ const handleApiError = (error: any) => {
 // Fetch content with optional language filter and content ID
 export async function getContent(lang?: string, contentType?: string, contentId?: string) {
     try {
-        let url = `${API_BASE_URL}/content`;
+        let url = `${API_BASE_URL}/api/content`;
 
         // Add query parameters if provided
         const params = new URLSearchParams();
@@ -57,7 +57,7 @@ export async function getContentWithTranslations(id: string | number) {
     try {
         // First try to use the admin endpoint which returns translations
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/content/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/content/${id}`, {
                 headers: {
                     'Accept': 'application/json'
                 }
@@ -92,7 +92,7 @@ export async function getContentWithTranslations(id: string | number) {
 // Log download event
 export async function logDownload(id: string | number) {
     try {
-        const response = await fetch(`${API_BASE_URL}/download/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/download/${id}`, {
             method: 'POST',
         });
 
@@ -109,7 +109,7 @@ export async function logDownload(id: string | number) {
 // Get all available languages
 export async function getLanguages() {
     try {
-        const response = await fetch(`${API_BASE_URL}/languages`);
+        const response = await fetch(`${API_BASE_URL}/api/languages`);
 
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
@@ -135,7 +135,7 @@ export async function getLanguages() {
 // Log visit to the site
 export async function logVisit(contentId?: number) {
     try {
-        const response = await fetch(`${API_BASE_URL}/visit`, {
+        const response = await fetch(`${API_BASE_URL}/api/visit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
