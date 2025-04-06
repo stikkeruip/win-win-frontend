@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/app/language-provider'
 import LanguageSelector from '@/components/language-selector'
+import { login } from '@/lib/admin-api'
 
 export default function AdminLogin() {
     const { t, localizedPath } = useLanguage()
@@ -19,27 +20,8 @@ export default function AdminLogin() {
         setError('')
 
         try {
-            const response = await fetch('http://localhost:8080/api/admin/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            })
-
-            // Check if response is ok before trying to parse JSON
-            if (!response.ok) {
-                // Try to parse as JSON, but handle case where it's not JSON
-                const data = await response.json().catch(() => ({
-                    error: `Server returned ${response.status}: ${response.statusText}`
-                }))
-                throw new Error(data.error || 'Login failed')
-            }
-
-            // Parse JSON response with error handling
-            const data = await response.json().catch(() => {
-                throw new Error('Invalid response from server. Please try again later.')
-            })
+            // Use the login function from admin-api.ts
+            const data = await login(username, password)
 
             // Store token in localStorage
             localStorage.setItem('adminToken', data.token)

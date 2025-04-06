@@ -2,7 +2,7 @@
 import { Content, ContentWithTranslations, Language } from './types'
 
 // Backend API base URL
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // Function to make authenticated requests to the API
 export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}) {
@@ -137,4 +137,31 @@ export async function createMultilingualContent(data: any) {
 // Get visit statistics
 export async function getVisitStats() {
     return await makeAuthenticatedRequest('/api/admin/stats/visits')
+}
+
+// Login function
+export async function login(username: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    })
+
+    // Check if response is ok before trying to parse JSON
+    if (!response.ok) {
+        // Try to parse as JSON, but handle case where it's not JSON
+        const data = await response.json().catch(() => ({
+            error: `Server returned ${response.status}: ${response.statusText}`
+        }))
+        throw new Error(data.error || 'Login failed')
+    }
+
+    // Parse JSON response with error handling
+    const data = await response.json().catch(() => {
+        throw new Error('Invalid response from server. Please try again later.')
+    })
+
+    return data
 }
